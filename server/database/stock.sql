@@ -20,11 +20,12 @@ DROP TABLE IF EXISTS Group_Balance;
 CREATE TABLE IF NOT EXISTS `Stock` (
   -- Primary Key
   `stock_id` int(11) NOT NULL,
+  PRIMARY KEY (`stock_id`),
 
   -- Attributes
-  `stock_name` int(11) NOT NULL,
-  `stock_price` int(11) NOT NULL,
-  `stock_share` int(11) NOT NULL
+  `name` int(11) NOT NULL,
+  `price` int(11) NOT NULL,
+  `share` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -34,13 +35,18 @@ CREATE TABLE IF NOT EXISTS `Stock` (
 --
 
 CREATE TABLE IF NOT EXISTS `Company` (
+  -- Primary Key
+  `name` varchar(50) NOT NULL,
+  PRIMARY KEY (`name`),
+
   -- Foreign Keys
   `stock_id` int(11) NOT NULL,
+  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`),
 
   -- Attributes
+  `website` varchar(50) NOT NULL,
   `company_size` int(11) NOT NULL,
-  `num_of_stockholders` int(11) NOT NULL,
-  `website` varchar(50) NOT NULL
+  `shareholders` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -52,9 +58,10 @@ CREATE TABLE IF NOT EXISTS `Company` (
 CREATE TABLE IF NOT EXISTS `User` (
   -- Primary Key
   `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`user_id`),
 
   -- Attributes
-  `money_on_account` int(11) NOT NULL
+  `balance` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -66,10 +73,13 @@ CREATE TABLE IF NOT EXISTS `User` (
 CREATE TABLE IF NOT EXISTS `Buys` (
   -- Primary Key
   `buy_id` int(11) NOT NULL,
+  PRIMARY KEY (`buy_id`),
 
   -- Foreign Keys
   `user_id` int(11) NOT NULL,
   `stock_id` int(11) NOT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES User(`user_id`),
+  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`),
 
   -- Attributes
   `amount` int(11) NOT NULL,
@@ -85,10 +95,13 @@ CREATE TABLE IF NOT EXISTS `Buys` (
 CREATE TABLE IF NOT EXISTS `Sells` (
   -- Primary Key
   `sell_id` int(11) NOT NULL,
+  PRIMARY KEY (`sell_id`),
 
   -- Foreign Keys
   `user_id` int(11) NOT NULL,
   `stock_id` int(11) NOT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES User(`user_id`),
+  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`),
 
   -- Attributes
   `amount` int(11) NOT NULL,
@@ -104,7 +117,8 @@ CREATE TABLE IF NOT EXISTS `Sells` (
 CREATE TABLE IF NOT EXISTS `Watchlist` (
   -- Primary Key
   `user_id` int(11) NOT NULL,
-  `stock_id` int(11) NOT NULL
+  `stock_id` int(11) NOT NULL,
+  PRIMARY KEY (`user_id`, `stock_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -116,10 +130,13 @@ CREATE TABLE IF NOT EXISTS `Watchlist` (
 CREATE TABLE IF NOT EXISTS `Transaction` (
   -- Primary Key
   `transaction_id` int(11) NOT NULL,
+  PRIMARY KEY (`transaction_id`)
 
   -- Foreign Keys
   `user_id` int(11) NOT NULL,
   `stock_id` int(11) NOT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES User(`user_id`),
+  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`),
 
   -- Attributes
   `amount` int(11) NOT NULL,
@@ -134,8 +151,28 @@ CREATE TABLE IF NOT EXISTS `Transaction` (
 
 CREATE TABLE IF NOT EXISTS `Groups` (
   -- Primary Key
+  `group_id` int(11) NOT NULL,
+  PRIMARY KEY (`group_id`)
+
+  -- Attributes
+  `balance` DECIMAL(12, 10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `Group_Users`
+--
+
+CREATE TABLE IF NOT EXISTS `Group_Users` (
+  -- Primary Key
+  `group_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `stock_id` int(11) NOT NULL
+  PRIMARY KEY (`group_id`, `user_id`),
+
+  -- Foreign Key
+  FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`),
+  FOREIGN KEY (`user_id`) REFERENCES User(`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -145,23 +182,14 @@ CREATE TABLE IF NOT EXISTS `Groups` (
 --
 
 CREATE TABLE IF NOT EXISTS `Group_Stock` (
-  -- Foreign Key
+  -- Primary Key
   `group_id` int(11) NOT NULL,
-  `stock_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `stock_id` int(11) NOT NULL,
+  PRIMARY KEY (`group_id`, `stock_id`),
 
--- --------------------------------------------------------
-
---
--- Table structure for table `Group_Balance`
---
-
-CREATE TABLE IF NOT EXISTS `Group_Balance` (
   -- Foreign Key
-  `group_id` int(11) NOT NULL,
-
-  -- Attribute
-  `balance` int(11) NOT NULL
+  FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`),
+  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
