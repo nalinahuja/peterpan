@@ -6,5 +6,5 @@ cs348 project repository for Elon Musketeers
 Install the dependencies using the following command
 
 ```bash
-python3 -m pip install -r requirements.txt
+command python3 -m pip install -r requirements.txt
 ```
