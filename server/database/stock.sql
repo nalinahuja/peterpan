@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS `Transaction`;
 DROP TABLE IF EXISTS `User_Transaction`;
 DROP TABLE IF EXISTS `Group_Transaction`;
 DROP TABLE IF EXISTS `Watchlist`;
+DROP TABLE IF EXISTS `Controller`;
 DROP TABLE IF EXISTS `Groups`;
 DROP TABLE IF EXISTS `Group_Users`;
 DROP TABLE IF EXISTS `Group_Stock`;
@@ -31,20 +32,17 @@ CREATE TABLE IF NOT EXISTS `Stock` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Company`
+-- Table structure for table `Controller`
+-- method = 0 -> add a stock, method = 1 -> insert a stock, method = 2 -> delete a stock
 --
-
-CREATE TABLE IF NOT EXISTS `Company` (
+CREATE TABLE IF NOT EXISTS `Controller` (
   -- Attributes
-  `name` varchar(50) NOT NULL,
+  `control_id` int(11) NOT NULL,
+  `method` DECIMAL(12, 10) NOT NULL,
   `stock_id` int(11) NOT NULL,
-  `website` varchar(50) NOT NULL,
-  `company_size` int(11) NOT NULL,
-  `shareholders` int(11) NOT NULL,
 
   -- Keys
-  PRIMARY KEY (`name`),
-  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`)
+  PRIMARY KEY (`control_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -57,6 +55,7 @@ CREATE TABLE IF NOT EXISTS `User` (
   -- Attributes
   `user_id` int(11) NOT NULL,
   `balance` DECIMAL(12, 10) NOT NULL,
+  `password` DECIMAL(12,10) NOT NULL,
 
   -- Keys
   PRIMARY KEY (`user_id`)
@@ -72,8 +71,8 @@ CREATE TABLE IF NOT EXISTS `Transaction` (
   -- Attributes
   `transaction_id` int(11) NOT NULL,
   `amount` DECIMAL(12, 10) NOT NULL,
-  `quantity` int(11) NOT NULL,
-  `date` int(11) NOT NULL,
+  `date`  DECIMAL(12,10) NOT NULL,
+  `user_id` int(11) NOT NULL,
 
   -- Keys
   PRIMARY KEY (`transaction_id`)
@@ -84,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `Transaction` (
 --
 -- Table structure for table `User_Transaction`
 -- type - (0 => SELL), (1 => BUY)
---
+-- Transaction_id should be unique
 
 CREATE TABLE IF NOT EXISTS `User_Transaction` (
   -- Attributes
@@ -92,9 +91,12 @@ CREATE TABLE IF NOT EXISTS `User_Transaction` (
   `type` BIT NOT NULL,
   `user_id` int(11) NOT NULL,
   `stock_id` int(11) NOT NULL,
+  `date` int(11) NOT NULL,
+  `amount` int(11) NOT NULL,
+  `Watchlist_id` int(11) NOT NULL,
 
   -- Keys
-  PRIMARY KEY (`transaction_id`, `user_id`, `stock_id`),
+  PRIMARY KEY (`transaction_id`),
   FOREIGN KEY (`transaction_id`) REFERENCES Transaction(`transaction_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -125,11 +127,14 @@ CREATE TABLE IF NOT EXISTS `Group_Transaction` (
 
 CREATE TABLE IF NOT EXISTS `Watchlist` (
   -- Attributes
+  `Watchlist_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `stock_id` int(11) NOT NULL,
+  `purchase_price` int(11) NOT NULL,
+  `stock_remaining` int(11) NOT NULL,
 
   -- Keys
-  PRIMARY KEY (`user_id`, `stock_id`)
+  PRIMARY KEY (`Watchlist_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -159,9 +164,9 @@ CREATE TABLE IF NOT EXISTS `Group_Users` (
   `user_id` int(11) NOT NULL,
 
   -- Keys
-  PRIMARY KEY (`group_id`, `user_id`),
-  FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`),
-  FOREIGN KEY (`user_id`) REFERENCES User(`user_id`)
+  PRIMARY KEY (`group_id`, `user_id`)
+  /*FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`),
+  FOREIGN KEY (`user_id`) REFERENCES User(`user_id`)*/
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -176,9 +181,9 @@ CREATE TABLE IF NOT EXISTS `Group_Stock` (
   `stock_id` int(11) NOT NULL,
 
   -- Keys
-  PRIMARY KEY (`group_id`, `stock_id`),
-  FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`),
-  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`)
+  PRIMARY KEY (`group_id`, `stock_id`)
+  /*FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`),
+  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`)*/
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
