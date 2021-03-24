@@ -1,13 +1,15 @@
 -- REMOVE FOR PRODUCTION RELEASE
 
 DROP TABLE IF EXISTS `Stock`;
-DROP TABLE IF EXISTS `Company`;
+DROP TABLE IF EXISTS `Stock_Update`;
+
 DROP TABLE IF EXISTS `User`;
+DROP TABLE IF EXISTS `Watchlist`;
+
 DROP TABLE IF EXISTS `Transaction`;
 DROP TABLE IF EXISTS `User_Transaction`;
 DROP TABLE IF EXISTS `Group_Transaction`;
-DROP TABLE IF EXISTS `Watchlist`;
-DROP TABLE IF EXISTS `Controller`;
+
 DROP TABLE IF EXISTS `Groups`;
 DROP TABLE IF EXISTS `Group_Users`;
 DROP TABLE IF EXISTS `Group_Stock`;
@@ -32,17 +34,18 @@ CREATE TABLE IF NOT EXISTS `Stock` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Controller`
--- method = 0 -> add a stock, method = 1 -> insert a stock, method = 2 -> delete a stock
+-- Table structure for table `Stock_Update`
 --
-CREATE TABLE IF NOT EXISTS `Controller` (
+
+CREATE TABLE IF NOT EXISTS `Stock_Update` (
   -- Attributes
-  `control_id` int(11) NOT NULL,
-  `method` DECIMAL(12, 10) NOT NULL,
+  `update_id` int(11) NOT NULL,
   `stock_id` int(11) NOT NULL,
+  `price_change` DECIMAL(12, 10) NOT NULL,
 
   -- Keys
-  PRIMARY KEY (`control_id`)
+  PRIMARY KEY (`update_id`, `stock_id`),
+  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -64,6 +67,25 @@ CREATE TABLE IF NOT EXISTS `User` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `Watchlist`
+--
+
+CREATE TABLE IF NOT EXISTS `Watchlist` (
+  -- Attributes
+  `user_id` int(11) NOT NULL,
+  `stock_id` int(11) NOT NULL,
+  /*`purchase_price` int(11) NOT NULL,
+  `stock_remaining` int(11) NOT NULL,*/
+
+  -- Keys
+  PRIMARY KEY (`user_id`, `stock_id`),
+  FOREIGN KEY (`user_id`) REFERENCES User(`user_id`),
+  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `Transaction`
 --
 
@@ -72,7 +94,6 @@ CREATE TABLE IF NOT EXISTS `Transaction` (
   `transaction_id` int(11) NOT NULL,
   `amount` DECIMAL(12, 10) NOT NULL,
   `date`  DECIMAL(12,10) NOT NULL,
-  `user_id` int(11) NOT NULL,
 
   -- Keys
   PRIMARY KEY (`transaction_id`)
@@ -83,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `Transaction` (
 --
 -- Table structure for table `User_Transaction`
 -- type - (0 => SELL), (1 => BUY)
--- Transaction_id should be unique
+--
 
 CREATE TABLE IF NOT EXISTS `User_Transaction` (
   -- Attributes
@@ -91,12 +112,11 @@ CREATE TABLE IF NOT EXISTS `User_Transaction` (
   `type` BIT NOT NULL,
   `user_id` int(11) NOT NULL,
   `stock_id` int(11) NOT NULL,
-  `date` int(11) NOT NULL,
-  `amount` int(11) NOT NULL,
-  `Watchlist_id` int(11) NOT NULL,
 
   -- Keys
   PRIMARY KEY (`transaction_id`),
+  FOREIGN KEY (`user_id`) REFERENCES User(`user_id`),
+  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`),
   FOREIGN KEY (`transaction_id`) REFERENCES Transaction(`transaction_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -116,25 +136,9 @@ CREATE TABLE IF NOT EXISTS `Group_Transaction` (
 
   -- Keys
   PRIMARY KEY (`transaction_id`, `group_id`, `stock_id`),
+  FOREIGN KEY (`group_id`) REFERENCES Group(`group_id`),
+  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`),
   FOREIGN KEY (`transaction_id`) REFERENCES Transaction(`transaction_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `Watchlist`
---
-
-CREATE TABLE IF NOT EXISTS `Watchlist` (
-  -- Attributes
-  `Watchlist_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `stock_id` int(11) NOT NULL,
-  `purchase_price` int(11) NOT NULL,
-  `stock_remaining` int(11) NOT NULL,
-
-  -- Keys
-  PRIMARY KEY (`Watchlist_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -165,8 +169,8 @@ CREATE TABLE IF NOT EXISTS `Group_Users` (
 
   -- Keys
   PRIMARY KEY (`group_id`, `user_id`)
-  /*FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`),
-  FOREIGN KEY (`user_id`) REFERENCES User(`user_id`)*/
+  FOREIGN KEY (`user_id`) REFERENCES User(`user_id`),
+  FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -182,8 +186,8 @@ CREATE TABLE IF NOT EXISTS `Group_Stock` (
 
   -- Keys
   PRIMARY KEY (`group_id`, `stock_id`)
-  /*FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`),
-  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`)*/
+  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`),
+  FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
