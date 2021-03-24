@@ -4,11 +4,18 @@ import string
 import numpy as np
 import pandas as pd
 
+from collections import defaultdict
+
 # Seed Random Module
 random.seed(os.urandom(1024))
 
-# Data File Name
-DATA_FILE = "stock.csv"
+# End Imports--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Stock File Name
+STOCK_FILE = "stock.csv"
+
+# History File Name
+HISTORY_FILE = "history.csv"
 
 # Number Of Unique Stocks
 NUM_STOCKS = 1000
@@ -22,6 +29,16 @@ MAXIMUM_STOCK_PRICE = 5000
 # Maximum Stock Shares
 MAXIMUM_STOCK_SHARES = 20000
 
+# Maximum History Length
+MAXIMUM_HISTORY_LENGTH = 1000
+
+# Stock Change Parameters
+STOCK_CHANGE_MU = 0
+STOCK_CHANGE_SIGMA = 0.1
+MAXIMUM_STOCK_CHANGE = 20
+
+# End Constants-------------------------------------------------------------------------------------------------------------------------------------------------------
+
 def generate_name():
     return ''.join([random.choice(string.ascii_uppercase) for i in range(MAXIMUM_NAME_LENGTH)])
 
@@ -31,6 +48,9 @@ if __name__ == "__main__":
 
     # Stock Tuples
     stocks = []
+
+    # History Tuples
+    history = defaultdict(list)
 
     # Generate Stock Entries
     for i in range(NUM_STOCKS):
@@ -59,11 +79,35 @@ if __name__ == "__main__":
         # Append Stock Data
         stocks.append((name, price, shares))
 
-    # Create CSV Data File
-    file = open(DATA_FILE, "w")
+        # Initialize Previous Prive
+        prev_price = price
+
+        # Create Stock History
+        for j in range(MAXIMUM_HISTORY_LENGTH):
+            # Get Increase Or Decrease Direction
+            id = int(random.randint(0, 1))
+
+            # Calculate Price Delta
+            delta = float(random.random() * 20) * (-1 if (id == 0) else 1)
+
+            # Calculate Current Price
+            curr_price = prev_price + delta
+
+            # Verify Current Price
+            if (curr_price < 10):
+                continue
+
+            # Append Stock Update To History Dictionary
+            history[i].append((j, i, curr_price))
+
+            # Update Previous Price
+            prev_price = curr_price
+
+    # Create CSV Stock File
+    stock_file = open(STOCK_FILE, "w")
 
     # Append Column Headers To File
-    file.write("id, name, price, share\n")
+    stock_file.write("stock_id, name, price, share\n")
 
     # Iterate Over Stock Data
     for i, stock in enumerate(stocks, 1):
@@ -71,7 +115,31 @@ if __name__ == "__main__":
         name, price, share = stock
 
         # Append Stock Data To File
-        file.write("{}, {}, {:.2f}, {}\n".format(i, name, price, share))
+        stock_file.write("{}, {}, {:.2f}, {}\n".format(i, name, price, share))
 
-    # Close Data File
-    file.close()
+    # Close Stock File
+    stock_file.close()
+
+    # Create CSV History File
+    hist_file = open(HISTORY_FILE, "w")
+
+    # Append Column Headers To File
+    hist_file.write("update_id, stock_id, change\n")
+
+    # Iterate Over Stocks By Id
+    for i in sorted(history.keys()):
+        # Get Stock Updates List
+        updates = history[i]
+
+        # Iterate Over Stock Updates
+        for j in range(len(updates)):
+            # Unpack Stock Data
+            update_id, stock_id, change = updates[j]
+
+            # Append History Data To File
+            hist_file.write("{}, {}, {}\n".format(update_id, stock_id, change))
+
+    # Close History File
+    hist_file.close()
+
+# End File-----------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -144,6 +144,7 @@ CREATE TABLE IF NOT EXISTS `Transaction` (
   `transaction_id` int(11) NOT NULL,
   `amount` DECIMAL(12, 10) NOT NULL,
   `date`  DECIMAL(12,10) NOT NULL,
+  `price` DECIMAL(12,10) NOT NULL,
 
   -- Keys
   PRIMARY KEY (`transaction_id`)
