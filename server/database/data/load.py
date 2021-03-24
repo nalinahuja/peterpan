@@ -57,10 +57,10 @@ if __name__ == "__main__":
         prob /= np.sum(prob)
 
         # Get Stock Price
-        price = (np.random.choice(pers, 1, p = prob)[0])
+        price = (np.random.choice(pers, 1, p = prob)[0]) + random.random()
 
         # Get Stock Share
-        shares = int(random.random() * MAXIMUM_STOCK_SHARES) + random.random()
+        shares = int(random.random() * MAXIMUM_STOCK_SHARES)
 
         # Append Stock Data
         stocks.append((name, price, shares))
