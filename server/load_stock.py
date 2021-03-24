@@ -16,15 +16,19 @@ df = pd.read_csv("database/data/stock.csv")
 add_stock = "INSERT INTO Stock "\
                "(stock_id, name, price, share)"\
                "VALUES (%s, %s, %s, %s)"
+
+
 #iterate all rows in stock csv and insert the data into database
 for label,row in df.iterrows():
+    #load stock attributes into variable
     stock_id = row['stock_id']
     name = row['name']
     price = row['price']
     share = row['share']
     stock_data = (stock_id, name, price, share)
-    print(label)
+    #insert new stock
     cursor.execute(add_stock, stock_data)
+    # Make sure data is committed to the database
     cnx.commit()
 cursor.close()
 cnx.close()
