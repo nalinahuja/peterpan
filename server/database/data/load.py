@@ -7,12 +7,6 @@ import pandas as pd
 # Seed Random Module
 random.seed(os.urandom(1024))
 
-'''
-`name` int(11) NOT NULL,
-`price` int(11) NOT NULL,
-`share` int(11) NOT NULL
-'''
-
 # Data File Name
 DATA_FILE = "stock.csv"
 
