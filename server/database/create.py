@@ -17,7 +17,7 @@ STOCK_FILE = "stock.csv"
 HISTORY_FILE = "history.csv"
 
 # Number Of Unique Stocks
-NUM_STOCKS = 10
+NUM_STOCKS = 50
 
 # Maximum Name Length
 MAXIMUM_NAME_LENGTH = 5
@@ -32,7 +32,7 @@ MAXIMUM_STOCK_PRICE = 5000
 MAXIMUM_STOCK_SHARES = 20000
 
 # Maximum History Length
-MAXIMUM_HISTORY_LENGTH = 1000
+MAXIMUM_HISTORY_LENGTH = 250
 
 # End Constants-------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     stock_file.write("stock_id,name,price,share\n")
 
     # Iterate Over Stock Data
-    for i, stock in enumerate(stocks, 1):
+    for i, stock in enumerate(stocks):
         # Unpack Stock Data
         name, price, share = stock
 

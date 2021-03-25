@@ -54,7 +54,7 @@ command echo -e "load: Starting flask server"
 export FLASK_APP=app.py
 
 # Start Flask Server
-command flask run
+command clear && command flask run
 
 # Unset Fields
 unset DATABASE_DIR DATABASE_CONFIG
