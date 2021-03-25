@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `Stock_Update` (
   -- Attributes
   `update_id` int(11) NOT NULL,
   `stock_id` int(11) NOT NULL,
-  `price_change` DECIMAL(12, 10) NOT NULL,
+  `price_change` DECIMAL(12,10) NOT NULL,
 
   -- Keys
   PRIMARY KEY (`update_id`, `stock_id`),
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `Stock_Update` (
 CREATE TABLE IF NOT EXISTS `User` (
   -- Attributes
   `user_id` int(11) NOT NULL,
-  `balance` DECIMAL(12, 10) NOT NULL,
+  `balance` DECIMAL(12,10) NOT NULL,
   `password` DECIMAL(12,10) NOT NULL,
 
   -- Keys
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS `Watchlist` (
 CREATE TABLE IF NOT EXISTS `Groups` (
   -- Attributes
   `group_id` int(11) NOT NULL,
-  `balance` DECIMAL(12, 10) NOT NULL,
+  `balance` DECIMAL(12,10) NOT NULL,
 
   -- Keys
   PRIMARY KEY (`group_id`)
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS `Group_Stock` (
 CREATE TABLE IF NOT EXISTS `Transaction` (
   -- Attributes
   `transaction_id` int(11) NOT NULL,
-  `amount` DECIMAL(12, 10) NOT NULL,
+  `amount` DECIMAL(12,10) NOT NULL,
   `date`  DECIMAL(12,10) NOT NULL,
   `price` DECIMAL(12,10) NOT NULL,
 
