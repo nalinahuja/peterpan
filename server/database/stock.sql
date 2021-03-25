@@ -103,14 +103,14 @@ CREATE TABLE IF NOT EXISTS `Groups` (
 --
 -- Table structure for table `Group_Users`
 --
-
+i
 CREATE TABLE IF NOT EXISTS `Group_Users` (
   -- Attributes
   `group_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
 
   -- Keys
-  PRIMARY KEY (`group_id`, `user_id`)
+  PRIMARY KEY (`group_id`, `user_id`),
   FOREIGN KEY (`user_id`) REFERENCES User(`user_id`),
   FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS `Group_Stock` (
   `stock_id` int(11) NOT NULL,
 
   -- Keys
-  PRIMARY KEY (`group_id`, `stock_id`)
+  PRIMARY KEY (`group_id`, `stock_id`),
   FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`),
   FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
