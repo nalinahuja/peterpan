@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-# Export Server Environment Variables
+# Export Database Environment Variables
 export DATABASE_DIR=$(command realpath ./database) DATABASE_CONFIG=$(command realpath ./db.yaml)
 
 # Prompt Database Confirmation
 command read -p "load: Is the database running? [y/n]: " confirm
 
 # Verify Confirmation
-[[ ${confirm} == "n" ]] && command exit 1
+[[ ${confirm} != "y" ]] && command exit 1
 
 # Prompt Load Confirmation
 command read -p "load: Is the database populated? [y/n]: " confirm
@@ -46,6 +46,9 @@ fi
 
 # Display Prompt
 command echo -e "load: Starting flask server"
+
+# Export Server Environment Variables
+export FLASK_APP=app.py
 
 # Start Flask Server
 command flask run
