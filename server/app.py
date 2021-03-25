@@ -42,12 +42,46 @@ def home():
 @app.route("/stock/<name>", methods = ["GET", "POST"])
 def stock(name):
     # todo, list the stock with the name
-    return "hello"
+    cursor = cnx.cursor()
+    get_stock_info = "SELECT name, price, share FROM Stock WHERE name = {}".format(name)
 
-@app.route("/stock", methods = ["GET", "POST"])
-def stockf():
-    # todo, list top 10 stocks, all stocks
-    return "hello"
+    #remove buy.html and create it. Make sure buy.html is an empty file
+    #every time before writing to it
+    if os.path.exists("templates/buy.html"):
+        os.remove("templates/buy.html")
+    buy_page = open("templates/buy.html", "x")
+
+    #buy_template.html contains code for asking user which stock_id
+    #they want to buy and how many they want to buy
+    buy_template_page = open("templates/buy_template.html", "r")
+
+    #loop through all lines of code into buy_template.html
+    for line in buy_template_page:
+        #write each row into buy.html
+        buy_page.write(line)
+
+    #execute the query for getting all stock information
+    cursor.execute(get_stock_info)
+    table = ""
+
+    #load all stock information into table variable
+    for stock_id,name,price,share in cursor:
+        table = table + "<tr>\n"
+        table = table + "<td>" + str(stock_id) + "</td>"
+        table = table + "<td>" + str(name) + "</td>"
+        table = table + "<td>" + str(price) + "</td>"
+        table = table + "<td>" + str(share) + "</td>"
+        table = table + "</tr>\n"
+
+    #load table value into buy_page
+    buy_page.write(table)
+
+    #end of html
+    buy_page.write("</table>")
+    buy_page.write("\n</html>")
+    buy_page.close()
+    #copy all of the code inside buy_template.html into buy.html
+    return (render_template('buy.html'))
 
 # Page to display when user clicks buy stock
 @app.route('/buy')
