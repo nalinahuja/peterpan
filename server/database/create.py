@@ -32,7 +32,7 @@ MAXIMUM_STOCK_PRICE = 5000
 MAXIMUM_STOCK_SHARES = 20000
 
 # Maximum History Length
-MAXIMUM_HISTORY_LENGTH = 250
+MAXIMUM_HISTORY_LENGTH = 50
 
 # End Constants-------------------------------------------------------------------------------------------------------------------------------------------------------
 
