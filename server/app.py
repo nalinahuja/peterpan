@@ -1,6 +1,7 @@
 import os
 import yaml
 import mysql.connector
+import buy_page_function as bpf
 
 from flask import Flask, request, redirect, render_template
 
@@ -8,7 +9,7 @@ from flask import Flask, request, redirect, render_template
 
 # Load Database Configuration
 db = yaml.load(open(os.environ['DATABASE_CONFIG']), yaml.Loader)
-
+#db = yaml.load(open("db.yaml"), yaml.Loader)
 # Establish Database Connection
 cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_password'],
                               host = db['mysql_host'], database = db['mysql_db'])
@@ -16,8 +17,19 @@ cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_pass
 # End Database Connection---------------------------------------------------------------------------------------------------------------------------------------------
 
 # Query for getting all current stock information
-get_stock = "SELECT stock_id, name, price, share FROM Stock"
-
+get_stock = "SELECT stock_id, name, price, share FROM Stock;"
+user_account_money = "SELECT balance FROM User Where user_id = %s;"
+get_stock_by_stock_id = "SELECT name,price,share FROM Stock Where stock_id = %s;"
+get_user_balance = "SELECT balance FROM User Where user_id = 0;"
+get_watchlist = "SELECT stock_id FROM Watchlist Where user_id = %s AND stock_id = %s;"
+get_transaction_number = "SELECT COUNT(*) FROM User_Transaction"
+get_amount_bought = "SELECT SUM(t.amount) FROM Transaction t, User_Transaction ut WHERE t.transaction_id = ut.transaction_id AND ut.type = 1 AND stock_id = %s AND user_id = %s;"
+get_amount_sold =  "SELECT SUM(t.amount) FROM Transaction t, User_Transaction ut WHERE t.transaction_id = ut.transaction_id AND ut.type = 0 AND stock_id = %s AND user_id = %s;"
+update_stock_share = "UPDATE Stock SET share = %s WHERE stock_id = %s;"
+update_user_balance = "UPDATE User SET balance = %s WHERE user_id = 0;"
+insert_user_transaction = "INSERT INTO User_Transaction (transaction_id,type,user_id,stock_id) VALUES (%s,%s,%s,%s);"
+insert_transaction = "INSERT INTO Transaction (transaction_id,amount,date,price) VALUES (%s,%s,%s,%s);"
+insert_watchlist = "INSERT INTO Watchlist (user_id,stock_id) VALUES (%s, %s);"
 # End SQL Queries-----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Create Flask Application
@@ -50,10 +62,88 @@ def stockf():
     return "hello"
 
 # Page to display when user clicks buy stock
-@app.route('/buy')
+@app.route('/buy', methods = ["GET", "POST"])
 def buy():
     # Create Database Cursor
     cursor = cnx.cursor()
+
+    if(request.method == 'POST'):
+        #if a user clicks on buy button,record his response
+        userDetails = request.form
+        stock_id = userDetails["stock_id"]
+        number = userDetails["number"]
+        data = (int(stock_id),)
+
+        #get stock price for the stock user want to buy
+        cursor.execute(get_stock_by_stock_id,data)
+        stock_price = 0
+        stock_share = 0
+        stock_name = ""
+        for name,price,share in cursor:
+            #print(price)
+            stock_name = name
+            stock_price = price
+            stock_share = share
+        #if there is no stock price
+        if(stock_price == 0):
+            return "Invalid stock ID. Please Go back and try again"
+
+        #get user balance
+        cursor.execute(get_user_balance)
+        balance = -5
+        for user_balance in cursor:
+            balance = user_balance[0]
+        spent = stock_price * int(number)
+        remaining = balance - spent
+        #if user does not have enough balance
+        if(remaining < 0):
+            return "Not enough balance"
+
+        #increase stock share after user buys it
+        stock_share = stock_share + int(number)
+        update_info = (stock_share,stock_id)
+        cursor.execute(update_stock_share,update_info)
+        cnx.commit()
+
+        #update user_balance
+        update_info = (remaining,)
+        cursor.execute(update_user_balance,update_info)
+        cnx.commit()
+
+        #update Watchlist
+        get_info = (0,stock_id)
+        cursor.execute(get_watchlist,get_info)
+        check = -1
+        for id in cursor:
+            check = id
+        #there is no same (stock_id,user_id) in watchlist
+        if(check == -1):
+            cursor.execute(insert_watchlist,get_info)
+            cnx.commit()
+
+        #update transaction
+        #get tranaction_id
+        cursor.execute(get_transaction_number)
+        transaction_id = 0
+        for x in cursor:
+            transaction_id = x[0]
+
+        #update transaction table
+        insert_info = (transaction_id,int(number),0,stock_price)
+        cursor.execute(insert_transaction,insert_info)
+        cnx.commit()
+
+
+        #update user_transaction
+        insert_info = (transaction_id,1,0,stock_id)
+        cursor.execute(insert_user_transaction,insert_info)
+        cnx.commit()
+
+        #print confirmation table into /templates/confirmation.html
+        bpf.confirmation_table(int(number),stock_id,stock_name,spent,remaining)
+
+        return redirect('/buy_confirmation')
+
 
     #remove buy.html and create it. Make sure buy.html is an empty file
     #every time before writing to it
@@ -65,33 +155,30 @@ def buy():
     #they want to buy and how many they want to buy
     buy_template_page = open("templates/buy_template.html", "r")
 
-    #loop through all lines of code into buy_template.html
-    for line in buy_template_page:
-        #write each row into buy.html
-        buy_page.write(line)
+    #initialize purchase page
+    bpf.load_purchase_page(buy_page,buy_template_page)
 
     #execute the query for getting all stock information
     cursor.execute(get_stock)
-    table = ""
 
-    #load all stock information into table variable
-    for stock_id,name,price,share in cursor:
-        table = table + "<tr>\n"
-        table = table + "<td>" + str(stock_id) + "</td>"
-        table = table + "<td>" + str(name) + "</td>"
-        table = table + "<td>" + str(price) + "</td>"
-        table = table + "<td>" + str(share) + "</td>"
-        table = table + "</tr>\n"
 
-    #load table value into buy_page
-    buy_page.write(table)
+    #display stock in the UI interface
+    bpf.display_stock(cursor,buy_page)
 
     #end of html
-    buy_page.write("</table>")
     buy_page.write("\n</html>")
     buy_page.close()
     #copy all of the code inside buy_template.html into buy.html
+    #cursor.close()
     return (render_template('buy.html'))
+
+@app.route('/buy_confirmation')
+def purchase():
+    if os.path.exists("templates/confirmation.html"):
+        return (render_template('confirmation.html'))
+    else:
+        return "No Information yet"
+
 
 # Page to display when user clicks sell stock
 @app.route('/sell')

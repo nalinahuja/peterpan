@@ -26,6 +26,14 @@ cursor.execute("DELETE FROM `Stock`;")
 # Commit Data To Database
 cnx.commit()
 
+#insert a user for testing purpose
+insert_user = "INSERT INTO User (user_id,balance,password) VALUES (%s, %s, %s);"
+cursor = cnx.cursor()
+random_user = (0,25000,123)
+cursor.execute(insert_user,random_user)
+cnx.commit()
+
+
 # Read Stock Data As Pandas Dataframe
 df = pd.read_csv("./stock.csv")
 
