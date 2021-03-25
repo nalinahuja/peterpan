@@ -1,7 +1,7 @@
 -- REMOVE FOR PRODUCTION RELEASE
 
-DROP TABLE IF EXISTS `User_Transaction`;
 DROP TABLE IF EXISTS `Group_Transaction`;
+DROP TABLE IF EXISTS `User_Transaction`;
 DROP TABLE IF EXISTS `Transaction`;
 
 DROP TABLE IF EXISTS `Group_Stock`;
