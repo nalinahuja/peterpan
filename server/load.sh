@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-export DATABASE_DIR=$(command realpath ./database)
-export DATABASE_CONFIG=$(command realpath ./db.yaml)
+# Export Server Environment Variables
+export DATABASE_DIR=$(command realpath ./database) DATABASE_CONFIG=$(command realpath ./db.yaml)
 
 # Switch To Database Directory
 command cd ${DATABASE_DIR}
