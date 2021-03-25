@@ -1,35 +1,54 @@
 #!/usr/bin/env bash
 
-# Prompt Confirmation
-command read -p "load: Is the databse running? [y/n]:" confirm
+# Export Server Environment Variables
+export DATABASE_DIR=$(command realpath ./database) DATABASE_CONFIG=$(command realpath ./db.yaml)
+
+# Prompt Database Confirmation
+command read -p "load: Is the database running? [y/n]: " confirm
 
 # Verify Confirmation
 [[ ${confirm} == "n" ]] && command exit 1
 
-# Export Server Environment Variables
-export DATABASE_DIR=$(command realpath ./database) DATABASE_CONFIG=$(command realpath ./db.yaml)
+# Prompt Load Confirmation
+command read -p "load: Is the database populated? [y/n]: " confirm
 
-# Switch To Database Directory
-command cd ${DATABASE_DIR}
-
-# Create SQL Data
-command python3 ./create.py
-
-# Verify Data Files
-if [[ ! -f ./stock.csv || ! -f ./history.csv ]]
+# Verify Confirmation
+if [[ ${confirm} == "n" ]]
 then
-  # Display Data Corruption Error
-  command echo -e "load: Could not create dataset"
+  # Switch To Database Directory
+  command cd ${DATABASE_DIR}
 
-  # Exit Program
-  command exit 1
+  # Display Prompt
+  command echo -e "load: Creating dataset"
+
+  # Create SQL Data
+  command python3 ./create.py
+
+  # Verify Data Files
+  if [[ ! -f ./stock.csv || ! -f ./history.csv ]]
+  then
+    # Display Data Corruption Error
+    command echo -e "load: Could not create dataset"
+
+    # Exit Program
+    command exit 1
+  fi
+
+  # Display Prompt
+  command echo -e "load: Inserting dataset into table"
+
+  # Load Data Into Database
+  command python3 ./insert.py
+
+  # Delete Data Files
+  command rm ./stock.csv ./history.csv
 fi
 
-# Load Data Into Database
-command python3 ./insert.py
+# Display Prompt
+command echo -e "load: Starting flask server"
 
-# Delete Data Files
-command rm ./stock.csv ./history.csv
+# Start Flask Server
+command flask run
 
 # Unset Fields
 unset DATABASE_DIR DATABASE_CONFIG
