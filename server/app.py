@@ -38,6 +38,16 @@ def home():
 
     return (render_template('index.html'))
 
+@app.route("/stock", methods = ["GET", "POST"])
+def stock():
+    # todo, list top 10 stocks, all stocks
+    return "hello"
+
+@app.route("/stock/<name>", methods = ["GET", "POST"])
+def stock(name):
+    # todo, list the stock with the name
+    return "hello"
+
 # Page to display when user clicks buy stock
 @app.route('/buy')
 def buy():

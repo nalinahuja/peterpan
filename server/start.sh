@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Prompt Confirmation
+command read -p "load: Is the databse running? [y/n]:" confirm
+
+# Verify Confirmation
+[[ ${confirm} == "n" ]] && command exit 1
+
 # Export Server Environment Variables
 export DATABASE_DIR=$(command realpath ./database) DATABASE_CONFIG=$(command realpath ./db.yaml)
 
