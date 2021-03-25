@@ -17,7 +17,7 @@ STOCK_FILE = "stock.csv"
 HISTORY_FILE = "history.csv"
 
 # Number Of Unique Stocks
-NUM_STOCKS = 1000
+NUM_STOCKS = 10
 
 # Maximum Name Length
 MAXIMUM_NAME_LENGTH = 5

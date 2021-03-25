@@ -57,7 +57,7 @@ cursor.execute("DELETE FROM `Stock_Update`;")
 # Dynamic SQL Query
 history_insert_query = """
                        INSERT INTO Stock_Update (update_id, stock_id, price_change)
-                       VALUES (%d, %d, %f);
+                       VALUES (%s, %s, %s);
                        """
 
 # Iterate Over Rows In Dataframe
