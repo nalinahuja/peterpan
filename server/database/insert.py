@@ -12,6 +12,8 @@ db = yaml.load(open(os.environ['DATABASE_CONFIG']), yaml.Loader)
 cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_password'],
                               host = db['mysql_host'], database = db['mysql_db'])
 
+# End Database Connection--------------------------------------------------------------------------------------------------------------------------------------------
+
 # Create Database Cursor
 cursor = cnx.cursor()
 
@@ -40,6 +42,8 @@ for label, row in (df.iterrows()):
 
     # Commit Data To Database
     cnx.commit()
+
+# End Stock Data Insertion--------------------------------------------------------------------------------------------------------------------------------------------
 
 # Read History Data As Pandas Dataframe
 df = pd.read_csv("./history.csv")
@@ -71,3 +75,5 @@ cursor.close()
 
 # Close Database Connection
 cnx.close()
+
+# End History Data Insertion------------------------------------------------------------------------------------------------------------------------------------------
