@@ -1,18 +1,18 @@
 -- REMOVE FOR PRODUCTION RELEASE
 
-DROP TABLE IF EXISTS `User`;
-DROP TABLE IF EXISTS `Watchlist`;
-
-DROP TABLE IF EXISTS `Stock`;
-DROP TABLE IF EXISTS `Stock_Update`;
-
-DROP TABLE IF EXISTS `Groups`;
-DROP TABLE IF EXISTS `Group_Users`;
-DROP TABLE IF EXISTS `Group_Stock`;
-
-DROP TABLE IF EXISTS `Transaction`;
-DROP TABLE IF EXISTS `User_Transaction`;
 DROP TABLE IF EXISTS `Group_Transaction`;
+DROP TABLE IF EXISTS `User_Transaction`;
+DROP TABLE IF EXISTS `Transaction`;
+
+DROP TABLE IF EXISTS `Group_Stock`;
+DROP TABLE IF EXISTS `Group_Users`;
+DROP TABLE IF EXISTS `Group_Info`;
+
+DROP TABLE IF EXISTS `Watchlist`;
+DROP TABLE IF EXISTS `User`;
+
+DROP TABLE IF EXISTS `Stock_Update`;
+DROP TABLE IF EXISTS `Stock`;
 
 -- --------------------------------------------------------
 
@@ -86,10 +86,10 @@ CREATE TABLE IF NOT EXISTS `Watchlist` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Groups`
+-- Table structure for table `Group_Info`
 --
 
-CREATE TABLE IF NOT EXISTS `Groups` (
+CREATE TABLE IF NOT EXISTS `Group_Info` (
   -- Attributes
   `group_id` int(11) NOT NULL,
   `balance` DECIMAL(12,10) NOT NULL,
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS `Group_Users` (
   -- Keys
   PRIMARY KEY (`group_id`, `user_id`),
   FOREIGN KEY (`user_id`) REFERENCES User(`user_id`),
-  FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`)
+  FOREIGN KEY (`group_id`) REFERENCES Group_Info(`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS `Group_Stock` (
   -- Keys
   PRIMARY KEY (`group_id`, `stock_id`),
   FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`),
-  FOREIGN KEY (`group_id`) REFERENCES Groups(`group_id`)
+  FOREIGN KEY (`group_id`) REFERENCES Group_Info(`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -187,8 +187,8 @@ CREATE TABLE IF NOT EXISTS `Group_Transaction` (
 
   -- Keys
   PRIMARY KEY (`transaction_id`, `group_id`, `stock_id`),
-  FOREIGN KEY (`group_id`) REFERENCES Group(`group_id`),
   FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`),
+  FOREIGN KEY (`group_id`) REFERENCES Group_Info(`group_id`),
   FOREIGN KEY (`transaction_id`) REFERENCES Transaction(`transaction_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
