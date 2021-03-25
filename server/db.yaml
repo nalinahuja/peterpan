@@ -5,7 +5,7 @@ mysql_host: 'localhost'
 mysql_user: 'root'
 
 # Enter your password in field below
-mysql_password: "youpassword"
+mysql_password: ''
 
 # Enter your database name below
-mysql_db: 'project1'
+mysql_db: 'peterpan'
