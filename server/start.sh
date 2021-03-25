@@ -48,13 +48,13 @@ then
 fi
 
 # Display Prompt
-command echo -e "load: Starting flask server"
+command clear && command echo -e "load: Starting Flask server"
 
 # Export Server Environment Variables
 export FLASK_APP=app.py
 
 # Start Flask Server
-command clear && command flask run
+command flask run
 
 # Unset Fields
 unset DATABASE_DIR DATABASE_CONFIG
