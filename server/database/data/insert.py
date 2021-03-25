@@ -17,7 +17,6 @@ add_stock = "INSERT INTO Stock "\
                "(stock_id, name, price, share)"\
                "VALUES (%s, %s, %s, %s)"
 
-
 #iterate all rows in stock csv and insert the data into database
 for label,row in df.iterrows():
     #load stock attributes into variable
