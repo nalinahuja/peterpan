@@ -1,11 +1,16 @@
-from flask import Flask,render_template,request,redirect
-import mysql.connector
 import yaml
+import mysql.connector
 
+from flask import Flask, request, redirect, render_template
+
+# End Imports--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Create Flask Application
 app = Flask(__name__)
 
-#load database into Python
-db = yaml.load(open('db.yaml'),yaml.Loader)
+#
+# load database into Python
+db = yaml.load(open('db.yaml'), yaml.Loader)
 cnx = mysql.connector.connect(user= db['mysql_user'], password= db['mysql_password'],
                               host= db['mysql_host'],
                               database=db['mysql_db'])

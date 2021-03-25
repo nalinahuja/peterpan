@@ -2,7 +2,6 @@ import os
 import random
 import string
 import numpy as np
-import pandas as pd
 
 from collections import defaultdict
 
@@ -107,7 +106,6 @@ if __name__ == "__main__":
     stock_file = open(STOCK_FILE, "w")
 
     # Append Column Headers To File
-    # Removed the white space between attributes so that it will be easy for pd.read_csv to read
     stock_file.write("stock_id,name,price,share\n")
 
     # Iterate Over Stock Data
@@ -116,7 +114,6 @@ if __name__ == "__main__":
         name, price, share = stock
 
         # Append Stock Data To File
-        # Removed the white space between attributes for pd.read_csv
         stock_file.write("{},{},{:.2f},{}\n".format(i, name, price, share))
 
     # Close Stock File
@@ -126,7 +123,7 @@ if __name__ == "__main__":
     hist_file = open(HISTORY_FILE, "w")
 
     # Append Column Headers To File
-    hist_file.write("update_id, stock_id, change\n")
+    hist_file.write("update_id,stock_id,price_change\n")
 
     # Iterate Over Stocks By Id
     for i in sorted(history.keys()):
@@ -136,10 +133,10 @@ if __name__ == "__main__":
         # Iterate Over Stock Updates
         for j in range(len(updates)):
             # Unpack Stock Data
-            update_id, stock_id, change = updates[j]
+            update_id, stock_id, price_change = updates[j]
 
             # Append History Data To File
-            hist_file.write("{}, {}, {}\n".format(update_id, stock_id, change))
+            hist_file.write("{},{},{}\n".format(update_id, stock_id, price_change))
 
     # Close History File
     hist_file.close()

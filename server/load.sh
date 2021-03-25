@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+export DATABASE_DIR=$(command realpath ./database)
+export DATABASE_CONFIG=$(command realpath ./db.yaml)
+
+# Switch To Database Directory
+command cd ${DATABASE_DIR}
+
 # Create SQL Data
 command python3 ./create.py
 
@@ -14,4 +20,7 @@ then
 fi
 
 # Load Data Into Database
-command python3 ./load.py
+command python3 ./insert.py
+
+# Delete Data Files
+command rm ./stock.csv ./history.csv
