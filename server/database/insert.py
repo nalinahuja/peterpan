@@ -17,13 +17,22 @@ cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_pass
 # Create Database Cursor
 cursor = cnx.cursor()
 
+# Drop Update Table
+cursor.execute("DELETE FROM `Stock_Update`;")
+
+# Drop Stock Table
+cursor.execute("DELETE FROM `Stock`;")
+
+# Commit Data To Database
+cnx.commit()
+
 # Read Stock Data As Pandas Dataframe
 df = pd.read_csv("./stock.csv")
 
 # Dynamic SQL Query
 stock_insert_query = """
                      INSERT INTO Stock (stock_id, name, price, share)
-                     VALUES (%s, %s, %s, %s)
+                     VALUES (%s, %s, %s, %s);
                      """
 
 # Iterate Over Rows In Dataframe
@@ -35,7 +44,7 @@ for label, row in (df.iterrows()):
     share = row['share']
 
     # Format Stock Tuple
-    stock_data = (stock_id, name, price, share)
+    stock_data = (int(stock_id), str(name), float(price), int(share))
 
     # Insert New Stock Tuple
     cursor.execute(stock_insert_query, stock_data)
@@ -51,7 +60,7 @@ df = pd.read_csv("./history.csv")
 # Dynamic SQL Query
 history_insert_query = """
                        INSERT INTO Stock_Update (update_id, stock_id, price_change)
-                       VALUES (%s, %s, %s)
+                       VALUES (%s, %s, %s);
                        """
 
 # Iterate Over Rows In Dataframe
@@ -62,7 +71,7 @@ for label, row in (df.iterrows()):
     price_change = row['price_change']
 
     # Format History Tuple
-    history_data = (stock_id, name, price)
+    history_data = (int(update_id), int(stock_id), float(price_change))
 
     # Insert New Stock Tuple
     cursor.execute(history_insert_query, history_data)

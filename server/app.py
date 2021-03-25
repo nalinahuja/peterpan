@@ -16,7 +16,7 @@ cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_pass
 # End Database Connection---------------------------------------------------------------------------------------------------------------------------------------------
 
 # Query for getting all current stock information
-get_stock = "SELECT stock_id,name,price,share FROM Stock"
+get_stock = "SELECT stock_id, name, price, share FROM Stock"
 
 # End SQL Queries-----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -38,19 +38,23 @@ def home():
 
     return (render_template('index.html'))
 
-@app.route("/stock", methods = ["GET", "POST"])
-def stock():
-    # todo, list top 10 stocks, all stocks
-    return "hello"
 
 @app.route("/stock/<name>", methods = ["GET", "POST"])
 def stock(name):
     # todo, list the stock with the name
     return "hello"
 
+@app.route("/stock", methods = ["GET", "POST"])
+def stockf():
+    # todo, list top 10 stocks, all stocks
+    return "hello"
+
 # Page to display when user clicks buy stock
 @app.route('/buy')
 def buy():
+    # Create Database Cursor
+    cursor = cnx.cursor()
+
     #remove buy.html and create it. Make sure buy.html is an empty file
     #every time before writing to it
     if os.path.exists("templates/buy.html"):
