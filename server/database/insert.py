@@ -20,7 +20,7 @@ cursor = cnx.cursor()
 # Drop Stock Table
 cursor.execute("DELETE FROM `Stock`;")
 
-cursor.commit()
+cnx.commit()
 
 import sys
 sys.exit()

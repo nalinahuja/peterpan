@@ -42,6 +42,9 @@ then
 
   # Delete Data Files
   command rm ./stock.csv ./history.csv
+
+  # Switch To Parent Directory
+  command cd ..
 fi
 
 # Display Prompt
