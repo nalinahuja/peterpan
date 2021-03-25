@@ -6,9 +6,6 @@ export DATABASE_DIR=$(command realpath ./database) DATABASE_CONFIG=$(command rea
 # Switch To Database Directory
 command cd ${DATABASE_DIR}
 
-# Start Database Server
-command mysql -u root
-
 # Create SQL Data
 command python3 ./create.py
 
