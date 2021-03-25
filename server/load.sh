@@ -24,3 +24,6 @@ command python3 ./insert.py
 
 # Delete Data Files
 command rm ./stock.csv ./history.csv
+
+# Unset Fields
+unset DATABASE_DIR DATABASE_CONFIG
