@@ -107,7 +107,8 @@ if __name__ == "__main__":
     stock_file = open(STOCK_FILE, "w")
 
     # Append Column Headers To File
-    stock_file.write("stock_id, name, price, share\n")
+    # Removed the white space between attributes so that it will be easy for pd.read_csv to read
+    stock_file.write("stock_id,name,price,share\n")
 
     # Iterate Over Stock Data
     for i, stock in enumerate(stocks, 1):
@@ -115,7 +116,8 @@ if __name__ == "__main__":
         name, price, share = stock
 
         # Append Stock Data To File
-        stock_file.write("{}, {}, {:.2f}, {}\n".format(i, name, price, share))
+        # Removed the white space between attributes for pd.read_csv
+        stock_file.write("{},{},{:.2f},{}\n".format(i, name, price, share))
 
     # Close Stock File
     stock_file.close()

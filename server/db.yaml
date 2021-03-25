@@ -1,0 +1,8 @@
+# Enter your host below
+mysql_host: 'localhost'
+# Enter your user name below
+mysql_user: 'root'
+# Enter your password in field below
+mysql_password: "youpassword"
+# Enter your database name below
+mysql_db: 'project1'

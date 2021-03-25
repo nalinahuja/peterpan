@@ -1,17 +1,19 @@
 -- REMOVE FOR PRODUCTION RELEASE
-
-DROP TABLE IF EXISTS `Stock`;
+DROP TABLE IF EXISTS `User_Transaction`;
+DROP TABLE IF EXISTS `Watchlist`;
 DROP TABLE IF EXISTS `Stock_Update`;
+DROP TABLE IF EXISTS `Stock`;
+
 
 DROP TABLE IF EXISTS `User`;
-DROP TABLE IF EXISTS `Watchlist`;
+
 
 DROP TABLE IF EXISTS `Groups`;
 DROP TABLE IF EXISTS `Group_Users`;
 DROP TABLE IF EXISTS `Group_Stock`;
 
 DROP TABLE IF EXISTS `Transaction`;
-DROP TABLE IF EXISTS `User_Transaction`;
+
 DROP TABLE IF EXISTS `Group_Transaction`;
 
 -- --------------------------------------------------------
@@ -23,7 +25,7 @@ DROP TABLE IF EXISTS `Group_Transaction`;
 CREATE TABLE IF NOT EXISTS `Stock` (
   -- Attributes
   `stock_id` int(11) NOT NULL,
-  `name` int(11) NOT NULL,
+  `name` varchar(10) NOT NULL,
   `price` int(11) NOT NULL,
   `share` int(11) NOT NULL,
 
