@@ -20,18 +20,13 @@ cursor = cnx.cursor()
 # Drop Stock Table
 cursor.execute("DELETE FROM `Stock`;")
 
-cnx.commit()
-
-import sys
-sys.exit()
-
 # Read Stock Data As Pandas Dataframe
 df = pd.read_csv("./stock.csv")
 
 # Dynamic SQL Query
 stock_insert_query = """
                      INSERT INTO Stock (stock_id, name, price, share)
-                     VALUES ({}, {}, {}, {});
+                     VALUES (%s, %s, %s, %s);
                      """
 
 # Iterate Over Rows In Dataframe
@@ -42,8 +37,11 @@ for label, row in (df.iterrows()):
     price = row['price']
     share = row['share']
 
+    # Format Stock Tuple
+    stock_data = (stock_id, name, price, share)
+
     # Insert New Stock Tuple
-    cursor.execute(stock_insert_query.format(stock_id, name, price, share))
+    cursor.execute(stock_insert_query, stock_data)
 
     # Commit Data To Database
     cnx.commit()
@@ -55,8 +53,6 @@ df = pd.read_csv("./history.csv")
 
 # Drop Update Table
 cursor.execute("DELETE FROM `Stock_Update`;")
-
-cursor.commit()
 
 # Dynamic SQL Query
 history_insert_query = """
