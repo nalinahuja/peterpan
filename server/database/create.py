@@ -19,8 +19,11 @@ HISTORY_FILE = "history.csv"
 # Number Of Unique Stocks
 NUM_STOCKS = 1000
 
-# Maximum Stock Name Length
+# Maximum Name Length
 MAXIMUM_NAME_LENGTH = 5
+
+# Maximum Price Change
+MAXIMUM_PRICE_CHANGE = 20
 
 # Maximum Stock Price
 MAXIMUM_STOCK_PRICE = 5000
@@ -30,11 +33,6 @@ MAXIMUM_STOCK_SHARES = 20000
 
 # Maximum History Length
 MAXIMUM_HISTORY_LENGTH = 1000
-
-# Stock Change Parameters
-STOCK_CHANGE_MU = 0
-STOCK_CHANGE_SIGMA = 0.1
-MAXIMUM_STOCK_CHANGE = 20
 
 # End Constants-------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -87,7 +85,7 @@ if __name__ == "__main__":
             id = int(random.randint(0, 1))
 
             # Calculate Price Delta
-            delta = float(random.random() * 20) * (-1 if (id == 0) else 1)
+            delta = float(random.random() * MAXIMUM_PRICE_CHANGE) * (-1 if (id == 0) else 1)
 
             # Calculate Current Price
             curr_price = prev_price + delta

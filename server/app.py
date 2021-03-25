@@ -1,29 +1,24 @@
 import os
 import yaml
 import mysql.connector
-from flask import Flask, request, redirect, render_template
-import os
 
-# End Imports--------------------------------------------------------------------------------------------------------------------------------------------------------
+from flask import Flask, request, redirect, render_template
+
+# End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Load Database Configuration
-db = yaml.load(open("db.yaml"), yaml.Loader)
+db = yaml.load(open(os.environ['DATABASE_CONFIG']), yaml.Loader)
 
 # Establish Database Connection
-
 cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_password'],
                               host = db['mysql_host'], database = db['mysql_db'])
-cursor = cnx.cursor()
 
-# End Database Connection--------------------------------------------------------------------------------------------------------------------------------------------
+# End Database Connection---------------------------------------------------------------------------------------------------------------------------------------------
 
-
-# Queries
-
-#query for getting all current stock information
+# Query for getting all current stock information
 get_stock = "SELECT stock_id,name,price,share FROM Stock"
 
-# End Queries --------------------------------------------------------------------------------------------------------------------------------------------
+# End SQL Queries-----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Create Flask Application
 app = Flask(__name__)
@@ -76,7 +71,6 @@ def buy():
 
     #load table value into buy_page
     buy_page.write(table)
-
 
     #end of html
     buy_page.write("</table>")
