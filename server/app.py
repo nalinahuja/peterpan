@@ -56,6 +56,9 @@ def home():
         if user_data.get("sell"):
             return redirect('/sell')
 
+        if (user_data.get("transactions")):
+            return (redirect("/transactions"))
+
     return (render_template('index.html'))
 
 
