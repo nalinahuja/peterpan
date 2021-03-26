@@ -48,7 +48,7 @@ then
 fi
 
 # Display Prompt
-command clear && command echo -e "load: Starting Flask server"
+command echo -e "load: Starting Flask server"
 
 # Export Server Environment Variables
 export FLASK_APP=app.py

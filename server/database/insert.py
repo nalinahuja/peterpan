@@ -12,27 +12,33 @@ db = yaml.load(open(os.environ['DATABASE_CONFIG']), yaml.Loader)
 cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_password'],
                               host = db['mysql_host'], database = db['mysql_db'])
 
-# End Database Connection--------------------------------------------------------------------------------------------------------------------------------------------
-
 # Create Database Cursor
 cursor = cnx.cursor()
 
-# Drop Update Table
+# End Database Connection--------------------------------------------------------------------------------------------------------------------------------------------
+
+# Delete Update Table
 cursor.execute("DELETE FROM `Stock_Update`;")
 
-# Drop Stock Table
+# Delete Stock Table
 cursor.execute("DELETE FROM `Stock`;")
+
+# Delete User Table
+cursor.execute("DELETE FROM `User`;")
 
 # Commit Data To Database
 cnx.commit()
 
-#insert a user for testing purpose
-insert_user = "INSERT INTO User (user_id,balance,password) VALUES (%s, %s, %s);"
-cursor = cnx.cursor()
-random_user = (0,25000,123)
-cursor.execute(insert_user,random_user)
-cnx.commit()
+# Insert a user for testing purpose
+insert_user = """
+              INSERT INTO User (user_id, balance, password)
+              VALUES (%s, %s, %s);
+              """
 
+# Insert User Into Database
+random_user = (int(0), float(2500), str("123"))
+cursor.execute(insert_user, random_user)
+cnx.commit()
 
 # Read Stock Data As Pandas Dataframe
 df = pd.read_csv("./stock.csv")

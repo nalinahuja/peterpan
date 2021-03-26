@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS `Stock_Update` (
 
 CREATE TABLE IF NOT EXISTS `User` (
   -- Attributes
-  `user_id` int(11) NOT NULL,
+  `user_id` varchar(30) NOT NULL,
   `balance` FLOAT NOT NULL,
   `password` varchar(15) NOT NULL,
 
