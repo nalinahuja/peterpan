@@ -25,11 +25,13 @@ get_watchlist = "SELECT stock_id FROM Watchlist Where user_id = %s AND stock_id 
 get_transaction_number = "SELECT COUNT(*) FROM User_Transaction"
 get_amount_bought = "SELECT SUM(t.amount) FROM Transaction t, User_Transaction ut WHERE t.transaction_id = ut.transaction_id AND ut.type = 1 AND stock_id = %s AND user_id = %s;"
 get_amount_sold =  "SELECT SUM(t.amount) FROM Transaction t, User_Transaction ut WHERE t.transaction_id = ut.transaction_id AND ut.type = 0 AND stock_id = %s AND user_id = %s;"
-get_transactions = """SELECT  stock_id, name, amount, type AS transaction_type, price
-                    FROM User_Transaction AS U JOIN Transaction AS T ON U.transaction_id = T.transaction_id
-                    JOIN Stock AS S 
-                    ON U.stock_id = S.stock_id
-                    WHERE U.user_id = %s"""
+get_transactions = """
+                   SELECT U.stock_id, S.name, T.amount, U.type AS transaction_type, T.price
+                   FROM User_Transaction AS U JOIN Transaction AS T ON U.transaction_id = T.transaction_id
+                   JOIN Stock AS S
+                   ON U.stock_id = S.stock_id
+                   WHERE U.user_id = {}
+                   """
 update_stock_share = "UPDATE Stock SET share = %s WHERE stock_id = %s;"
 update_user_balance = "UPDATE User SET balance = %s WHERE user_id = 0;"
 insert_user_transaction = "INSERT INTO User_Transaction (transaction_id,type,user_id,stock_id) VALUES (%s,%s,%s,%s);"
@@ -72,19 +74,15 @@ def stockf():
 def transaction():
     # Creating the cursor
     cursor = cnx.cursor()
-    
+
     #user details (FOR now)
     user_id = 0
 
     #transaction list
     t_list = []
-    
-    #storing user id
-    data = (int(user_id))
 
-    
     #executing the query to get the transaction info
-    cursor.execute(get_transactions, data)
+    cursor.execute(get_transactions.format(user_id))
     for stock_id, name, amount, transaction_type, price in cursor:
         s_id = stock_id
         t_type = transaction_type
@@ -93,10 +91,11 @@ def transaction():
         total_cost = amount * price
 
         t_list.append((s_id, t_type, s_name, t_amount, total_cost))
-            
+
+    cursor.close()
+
     return render_template("transactions.html", data = t_list)
-        
-      
+
 # Page to display when user clicks buy stock
 @app.route('/buy', methods = ["GET", "POST"])
 def buy():

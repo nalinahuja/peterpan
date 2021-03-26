@@ -1,29 +1,59 @@
 <!DOCTYPE html>
-<title>User Transaction History</title>
-<center><h1>User Transactions</h1></center>
+<html>
+<head>
+  <style>
+    body, html {
+      background-image: url('https://specials-images.forbesimg.com/imageserve/5f3a9bf8ea6250a0856f35b4/960x0.jpg?fit=scale');"
 
-{% for s_id, t_type, s_name, t_amount, total_cost in data %}
-  <table>
-  <tr>
-  <td>Number of stocks</td>
-  <td>{{t_amount}}</td>
-  </tr>
+      /* Center and scale the image nicely */
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
 
-  <tr>
-  <td>Stock ID</td> 
-  <td>{{s_id}}</td>
-  </tr>
-  
-  <tr>
-  <td>Transaction Type</td>
-  <td>{{t_type}}</td>
-  </tr>
-  
-  <tr>
-  <td>Total Money Spent</td>
-  <td>{{total_cost}}</td>
-  </tr>
-  
-  </table>
-  
-{% endfor %}
+      height: 100%;
+
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <title>User Transaction History</title>
+  <div>
+    <center>
+    <div style="background-color: #24c594; width: 30%; height: 800px;">
+      <div>
+        <br>
+        <h1>User Transactions</h1>
+        <div>
+          {% for s_id, t_type, s_name, t_amount, total_cost in data %}
+            <table border = '1'>
+            <tr>
+            <td>Number of stocks</td>
+            <td>{{t_amount}}</td>
+            </tr>
+
+            <tr>
+            <td>Stock ID</td>
+            <td>{{s_id}}</td>
+            </tr>
+
+            <tr>
+            <td>Transaction Type</td>
+            <td>{{t_type}}</td>
+            </tr>
+
+            <tr>
+            <td>Total Money Spent</td>
+            <td>{{total_cost}}</td>
+            </tr>
+
+            </table>
+            <br>
+
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    </center>
+  </div>
+</body>
