@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS `Group_Info` (
 --
 -- Table structure for table `Group_Users`
 --
-i
+
 CREATE TABLE IF NOT EXISTS `Group_Users` (
   -- Attributes
   `group_id` int(11) NOT NULL,
