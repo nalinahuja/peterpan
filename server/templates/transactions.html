@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<title>User Transaction History</title>
+<center><h1>User Transactions</h1></center>
+
+{% for s_id, t_type, s_name, t_amount, total_cost in data %}
+  <table>
+  <tr>
+  <td>Number of stocks</td>
+  <td>{{t_amount}}</td>
+  </tr>
+
+  <tr>
+  <td>Stock ID</td> 
+  <td>{{s_id}}</td>
+  </tr>
+  
+  <tr>
+  <td>Transaction Type</td>
+  <td>{{t_type}}</td>
+  </tr>
+  
+  <tr>
+  <td>Total Money Spent</td>
+  <td>{{total_cost}}</td>
+  </tr>
+  
+  </table>
+  
+{% endfor %}
