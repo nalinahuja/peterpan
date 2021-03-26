@@ -23,6 +23,12 @@ cursor.execute("DELETE FROM `Stock_Update`;")
 # Delete Stock Table
 cursor.execute("DELETE FROM `Stock`;")
 
+# Delete User Transaction Table
+cursor.execute("DELETE FROM `User_Transaction`;")
+
+# Delete Transaction Table
+cursor.execute("DELETE FROM `Transaction`;")
+
 # Delete User Table
 cursor.execute("DELETE FROM `User`;")
 

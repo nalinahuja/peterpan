@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `User` (
 
 CREATE TABLE IF NOT EXISTS `Watchlist` (
   -- Attributes
-  `user_id` int(11) NOT NULL,
+  `user_id` varchar(30) NOT NULL,
   `stock_id` int(11) NOT NULL,
   /*`purchase_price` int(11) NOT NULL,
   `stock_remaining` int(11) NOT NULL,*/
@@ -107,7 +107,7 @@ i
 CREATE TABLE IF NOT EXISTS `Group_Users` (
   -- Attributes
   `group_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` varchar(30) NOT NULL,
 
   -- Keys
   PRIMARY KEY (`group_id`, `user_id`),
@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS `User_Transaction` (
   -- Attributes
   `transaction_id` int(11) NOT NULL,
   `type` BIT NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` varchar(30) NOT NULL,
   `stock_id` int(11) NOT NULL,
 
   -- Keys
