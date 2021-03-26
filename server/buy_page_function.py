@@ -1,14 +1,11 @@
 import os
 
-
 #function that load all information in buy_template_page into buy_page
 def load_purchase_page(buy_page,buy_template_page):
     #loop through all lines of code into buy_template.html
     for line in buy_template_page:
         #write each row into buy.html
         buy_page.write(line)
-
-
 
 #function that displays stock information in html page
 def display_stock(cursor,buy_page):

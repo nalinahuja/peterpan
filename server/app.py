@@ -9,7 +9,7 @@ from flask import Flask, request, redirect, render_template
 
 # Load Database Configuration
 db = yaml.load(open(os.environ['DATABASE_CONFIG']), yaml.Loader)
-#db = yaml.load(open("db.yaml"), yaml.Loader)
+
 # Establish Database Connection
 cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_password'],
                               host = db['mysql_host'], database = db['mysql_db'])
@@ -30,6 +30,7 @@ update_user_balance = "UPDATE User SET balance = %s WHERE user_id = 0;"
 insert_user_transaction = "INSERT INTO User_Transaction (transaction_id,type,user_id,stock_id) VALUES (%s,%s,%s,%s);"
 insert_transaction = "INSERT INTO Transaction (transaction_id,amount,date,price) VALUES (%s,%s,%s,%s);"
 insert_watchlist = "INSERT INTO Watchlist (user_id,stock_id) VALUES (%s, %s);"
+
 # End SQL Queries-----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Create Flask Application
@@ -161,7 +162,6 @@ def buy():
     #execute the query for getting all stock information
     cursor.execute(get_stock)
 
-
     #display stock in the UI interface
     bpf.display_stock(cursor,buy_page)
 
@@ -178,7 +178,6 @@ def purchase():
         return (render_template('confirmation.html'))
     else:
         return "No Information yet"
-
 
 # Page to display when user clicks sell stock
 @app.route('/sell')
