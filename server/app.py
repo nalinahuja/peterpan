@@ -4,6 +4,7 @@ import mysql.connector
 import buy_page_function as bpf
 
 from flask import Flask, request, redirect, render_template
+from flask_sqlalchemy import SQLAlchemy
 
 # End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -42,6 +43,9 @@ insert_watchlist = "INSERT INTO Watchlist (user_id,stock_id) VALUES (%s, %s);"
 
 # Create Flask Application
 app = Flask(__name__)
+#fill in uri with actual db uri
+app.config ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///students.sqlite3'
+db = SQLAlchemy(app)
 
 # Route to landing page
 @app.route("/", methods=['GET', 'POST'])
