@@ -7,6 +7,9 @@ db.yaml
 # MacOS Files
 .DS_Store
 
+# VScode Environments
+.vscode
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
