@@ -45,7 +45,8 @@ insert_watchlist = "INSERT INTO Watchlist (user_id,stock_id) VALUES (%s, %s);"
 app = Flask(__name__)
 #fill in uri with actual db uri
 #supposedly this format works? try when free
-app.config ['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root@/<dbname>?unix_socket=/cloudsql/<projectid>:<instancename>'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root@/peterpan?unix_socket=/cloudsql/hw3-ahuja15:us-central1:hw3-ahuja15'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 
 # Route to landing page

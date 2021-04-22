@@ -16,7 +16,7 @@ command read -p "load: Is the database populated? [y/n]: " confirm
 if [[ ${confirm} == "n" ]]
 then
   # Switch To Database Directory
-  command cd ${DATABASE_DIR}
+  command cd ${DATABASE_DIR}/data
 
   # Display Prompt
   command echo -e "load: Creating dataset"
@@ -44,7 +44,7 @@ then
   command rm ./stock.csv ./history.csv
 
   # Switch To Parent Directory
-  command cd ..
+  command cd ../..
 fi
 
 # Display Prompt
@@ -54,7 +54,7 @@ command echo -e "load: Starting Flask server"
 export FLASK_APP=app.py
 
 # Start Flask Server
-command flask run
+command python3 ./app.py
 
 # Unset Fields
 unset DATABASE_DIR DATABASE_CONFIG
