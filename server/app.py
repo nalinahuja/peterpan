@@ -51,20 +51,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Import ORM
-# import orm
+import orm
 
-class User(db.Model):
-    # __tablename__ = 'User'
-    user_id = db.Column(db.String(30), primary_key = True, nullable = False)
-    balance = db.Column(db.Float, nullable = False)
-    password = db.Column(db.String(15), nullable = False)
+db.create_all()
 
-    def __init__(self, user_id, balance, password):
-        self.user_id = user_id
-        self.balance = balance
-        self.password = password
-
-newUser = User(user_id = 2, balance = 69420, password = "1234")
+newUser = orm.User(user_id = 4, balance = 69420, password = "1234")
 
 db.session.add(newUser)
 db.session.commit()
