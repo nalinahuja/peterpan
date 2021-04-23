@@ -1,4 +1,4 @@
-from .app import db
+from app import db
 
 class Stock(db.model):
     __tablename__ = 'Stock'
@@ -31,7 +31,7 @@ class Group_Info(db.model):
 
 class Group_Users(db.model):
     __tablename__ = 'Group_Users'
-    group_id = db.Column(db.Integer, db.ForeignKey('Group.stock_id'), primary_key = True), nullable = False
+    group_id = db.Column(db.Integer, db.ForeignKey('Group.stock_id'), primary_key = True, nullable = False)
     user_id = db.Column(db.String(30), db.ForeignKey('User.stock_id'), primary_key = True, nullable = False)
 
 class Group_Stock(db.model):
