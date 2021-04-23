@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# Export Database Environment Variables
-export DATABASE_DIR=$(command realpath ./database)
-
 # Prompt Database Confirmation
 command read -p "load: Is the database running? [y/n]: " confirm
 
@@ -15,17 +12,14 @@ command read -p "load: Is the database populated? [y/n]: " confirm
 # Verify Confirmation
 if [[ ${confirm} == "n" ]]
 then
-  # Switch To Database Directory
-  command cd ${DATABASE_DIR}/data
-
   # Display Prompt
   command echo -e "load: Creating dataset"
 
   # Create SQL Data
-  command python3 ./create.py
+  command python3 ./database/dataset/create.py
 
   # Verify Data Files
-  if [[ ! -f ./stock.csv || ! -f ./history.csv ]]
+  if [[ ! -f ./database/dataset/stock.csv || ! -f ./database/dataset/history.csv ]]
   then
     # Display Data Corruption Error
     command echo -e "load: Could not create dataset"
@@ -38,13 +32,10 @@ then
   command echo -e "load: Inserting dataset into table"
 
   # Load Data Into Database
-  command python3 ./insert.py
+  command python3 ./database/dataset/insert.py
 
   # Delete Data Files
-  command rm ./stock.csv ./history.csv
-
-  # Switch To Parent Directory
-  command cd ../..
+  command rm ./database/dataset/stock.csv ./database/dataset/history.csv
 fi
 
 # Display Prompt
@@ -54,7 +45,7 @@ command echo -e "load: Starting Flask server"
 export FLASK_APP=app.py
 
 # Start Flask Server
-command python3 ./app.py
+command flask run
 
 # Unset Fields
 unset DATABASE_DIR DATABASE_CONFIG
