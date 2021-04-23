@@ -48,6 +48,4 @@ command echo -e "load: Starting Flask server"
 export FLASK_APP=app.py
 
 # Start Flask Server
-# command flask run
-
-command python3 ./app.py
+command flask run
