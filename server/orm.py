@@ -1,3 +1,5 @@
+from globl import SQL_ALCHEMY_DB as db
+
 class Stock(db.Model):
     __tablename__ = 'Stock'
     stock_id = db.Column(db.Integer, primary_key = True, nullable = False)
@@ -5,22 +7,11 @@ class Stock(db.Model):
     price = db.Column(db.Float, nullable = False)
     balance = db.Column(db.Float, nullable = False)
 
-    def __init__(self, stock_id, name, price, balance):
-        self.stock_id = stock_id
-        self.name = name
-        self.price = price
-        self.balance = balance
-
 class Stock_Update(db.Model):
     __tablename__ = 'Stock_Update'
     update_id = db.Column(db.Integer, primary_key = True, nullable = False)
     stock_id = db.Column(db.Integer, db.ForeignKey('Stock.stock_id'), primary_key = True, nullable = False)
     price_change = db.Column(db.Float, nullable = False)
-
-    def __init__(self, update_id, stock_id, price_change):
-        self.update_id = update_id
-        self.stock_id = stock_id
-        self.price_change = price_change
 
 class User(db.Model):
     __tablename__ = 'User'
@@ -28,37 +19,20 @@ class User(db.Model):
     balance = db.Column(db.Float, nullable = False)
     password = db.Column(db.String(15), nullable = False)
 
-    def __init__(self, user_id, balance, password):
-        self.user_id = user_id
-        self.balance = balance
-        self.password = password
-
 class Watchlist(db.Model):
     __tablename__ = 'Watchlist'
     user_id = db.Column(db.String(30), db.ForeignKey('User.stock_id'), primary_key = True, nullable = False)
     stock_id = db.Column(db.Integer, db.ForeignKey('Stock.stock_id'), primary_key = True, nullable = False)
-
-    def __init__(self, user_id, stock_id):
-        self.user_id = user_id
-        self.stock_id = stock_id
 
 class Group_Info(db.Model):
     __tablename__ = 'Group_Info'
     group_id = db.Column(db.Integer, primary_key = True, nullable = False)
     balance = db.Column(db.Float, nullable = False)
 
-    def __init__(self, group_id, balance):
-        self.group_id = group_id
-        self.balance = balance
-
 class Group_Users(db.Model):
     __tablename__ = 'Group_Users'
     group_id = db.Column(db.Integer, db.ForeignKey('Group.stock_id'), primary_key = True, nullable = False)
     user_id = db.Column(db.String(30), db.ForeignKey('User.stock_id'), primary_key = True, nullable = False)
-
-    def __init__(self, group_id, user_id):
-        self.group_id = group_id
-        self.user_id = user_id
 
 class Group_Stock(db.Model):
     __tablename__ = 'Group_Stock'
@@ -107,3 +81,6 @@ class Group_Transaction(db.Model):
         self.type = type
         self.group_id = group_id
         self.stock_id  = stock_id
+
+# Create All Databases
+db.create_all()

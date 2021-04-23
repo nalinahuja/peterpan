@@ -1,5 +1,6 @@
 import os
 import yaml
+import globl
 import mysql.connector
 import buy_page_function as bpf
 
@@ -50,15 +51,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:''@localhost/peter
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# Set Global Variable
+globl.SQL_ALCHEMY_DB = db
+
 # Import ORM
 import orm
-
-db.create_all()
-
-newUser = orm.User(user_id = 4, balance = 69420, password = "1234")
-
-db.session.add(newUser)
-db.session.commit()
 
 # Route to landing page
 @app.route("/", methods=['GET', 'POST'])
