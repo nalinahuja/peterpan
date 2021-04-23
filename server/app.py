@@ -54,6 +54,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:''@localhost/peter
 # Intiialize ORM Database
 db = SQLAlchemy(app)
 
+# Verify SQL_ALCHEMY_DB
+if (db is None):
+    raise ValueError("db is None")
+
 # Set ORM Database Reference
 globl.SQL_ALCHEMY_DB = db
 
