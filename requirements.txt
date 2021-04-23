@@ -1,6 +1,8 @@
-Flask==1.1.2
-numpy==1.20.1
-pandas==1.2.3
-PyYAML==5.4.1
-mysql-connector==2.2.9
-Flask-SQLAlchemy==2.5.1
+Flask
+numpy
+pandas
+PyYAML
+mysql-connector
+Flask-SQLAlchemy
+mysql-connector-python
+mysqlclient
