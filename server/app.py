@@ -44,18 +44,23 @@ insert_watchlist = "INSERT INTO Watchlist (user_id,stock_id) VALUES (%s, %s);"
 
 # Create Flask Application
 app = Flask(__name__)
-#fill in uri with actual db uri
-#supposedly this format works? try when free
-app.config['SECRET_KEY'] = 'hardsecretkey'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:''@localhost/peterpan'
+
+# Configure Flask Application
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:''@localhost/peterpan'
+
+# End Server Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Intiialize ORM Database
 db = SQLAlchemy(app)
 
-# Set Global Variable
+# Set ORM Database Reference
 globl.SQL_ALCHEMY_DB = db
 
-# Import ORM
+# Import ORM Module
 import orm
+
+# End ORM Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Route to landing page
 @app.route("/", methods=['GET', 'POST'])
