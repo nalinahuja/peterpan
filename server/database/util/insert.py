@@ -6,7 +6,7 @@ import mysql.connector
 # End Imports--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Load Database Configuration
-db = yaml.load("./db.yaml", yaml.Loader)
+db = yaml.load(open(os.path.realpath("../../db.yaml")), yaml.Loader)
 
 # Establish Database Connection
 cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_password'],
@@ -47,7 +47,7 @@ cursor.execute(insert_user, random_user)
 cnx.commit()
 
 # Read Stock Data As Pandas Dataframe
-df = pd.read_csv("./stock.csv")
+df = pd.read_csv(os.path.realpath("../stock.csv"))
 
 # Dynamic SQL Query
 stock_insert_query = """
@@ -75,7 +75,7 @@ for label, row in (df.iterrows()):
 # End Stock Data Insertion--------------------------------------------------------------------------------------------------------------------------------------------
 
 # Read History Data As Pandas Dataframe
-df = pd.read_csv("./history.csv")
+df = pd.read_csv(os.path.realpath("../history.csv"))
 
 # Dynamic SQL Query
 history_insert_query = """

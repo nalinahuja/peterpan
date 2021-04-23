@@ -10,7 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 # End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Load Database Configuration
-db = yaml.load("./db.yaml", yaml.Loader)
+db = yaml.load(open("./db.yaml"), yaml.Loader)
 
 # Establish Database Connection
 cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_password'],

@@ -11,10 +11,10 @@ random.seed(os.urandom(1024))
 # End Imports--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Stock File Name
-STOCK_FILE = "stock.csv"
+STOCK_FILE = os.path.realpath("../stock.csv")
 
 # History File Name
-HISTORY_FILE = "history.csv"
+HISTORY_FILE = os.path.realpath("../history.csv")
 
 # Number Of Unique Stocks
 NUM_STOCKS = 50
