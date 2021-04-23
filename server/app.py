@@ -244,6 +244,39 @@ def purchase():
 def sell():
     return (render_template('sell.html'))
 
+@app.route('/transaction_history/<user_id>')
+def transaction_history(user_id):
+    cursor = cnx.cursor()
+    transaction_query = """
+                        SELECT * 
+                        FROM Transaction t
+                        JOIN User_Transaction u
+                        ON t.transaction_id = u.transaction_id
+                        WHERE u.user_id = %s; 
+                        """
+    cursor.execute(transaction_query, user_id)
+    return 0
+
+@app.route('/user/<user_id>')
+def user_info(user_id):
+    cursor = cnx.cursor()
+    user_query = "SELECT * FROM User u WHERE u.user_id = %s;"
+    cursor.execute(user_query, user_id)
+    return 0
+
+@app.route('/watchlist/<user_id>')
+def watchlist(user_id):
+    cursor = cnx.cursor()
+    watchlist_query = """
+                        SELECT * 
+                        FROM Watchlist w
+                        JOIN Stock s
+                        ON w.stock_id = s.stock_id
+                        WHERE w.user_id = %s; 
+                        """
+    cursor.execute(watchlist_query, user_id)
+    return 0
+
 # Start Server
 if __name__ == "__main__":
     app.run(debug = True)
