@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 # Declare Database Configuration Path
-declare DATABASE_CONFIG=$(command realpath "../../db.yaml")
+export DATABASE_CONFIG=$(command realpath "../../db.yaml")
 
 # Display Prompt
-command echo -en "\rload: Creating dataset"
+command echo -en "\rload: Creating dataset "
 
 # Create SQL Data
 command python3 ./create.py
@@ -20,10 +20,13 @@ then
 fi
 
 # Display Prompt
-command echo -en "\rload: Inserting dataset into table"
+command echo -en "\rload: Inserting dataset into table "
 
 # Load Data Into Database
 command python3 ./insert.py
 
 # Display Prompt
-command echo -e "\rload: Operation successful"
+command echo -e "\rload: Operation successful          "
+
+# Unset Fields
+unset DATABASE_CONFIG
