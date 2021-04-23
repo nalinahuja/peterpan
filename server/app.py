@@ -9,13 +9,13 @@ from flask_sqlalchemy import SQLAlchemy
 # End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Load Database Configuration
-db = yaml.load(open(os.environ['DATABASE_CONFIG']), yaml.Loader)
+db = yaml.load("./db.yaml", yaml.Loader)
 
 # Establish Database Connection
 cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_password'],
                               host = db['mysql_host'], database = db['mysql_db'])
 
-# End Database Connection---------------------------------------------------------------------------------------------------------------------------------------------
+# End Database Connector----------------------------------------------------------------------------------------------------------------------------------------------
 
 # Query for getting all current stock information
 get_stock = "SELECT stock_id, name, price, share FROM Stock;"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Export Database Environment Variables
-export DATABASE_DIR=$(command realpath ./database) DATABASE_CONFIG=$(command realpath ./db.yaml)
+export DATABASE_DIR=$(command realpath ./database)
 
 # Prompt Database Confirmation
 command read -p "load: Is the database running? [y/n]: " confirm
