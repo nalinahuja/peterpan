@@ -6,11 +6,11 @@ import mysql.connector
 # End Imports--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Load Database Configuration
-db = yaml.load(open(os.path.realpath("../../db.yaml")), yaml.Loader)
+dbconf = yaml.load(open(os.path.realpath("../../db.yaml")), yaml.Loader)
 
 # Establish Database Connection
-cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_password'],
-                              host = db['mysql_host'], database = db['mysql_db'])
+cnx = mysql.connector.connect(user = dbconf['mysql_user'], password = dbconf['mysql_password'],
+                              host = dbconf['mysql_host'], database = dbconf['mysql_db'])
 
 # Create Database Cursor
 cursor = cnx.cursor()

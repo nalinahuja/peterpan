@@ -1,5 +1,4 @@
 import os
-import orm
 import yaml
 import mysql.connector
 import buy_page_function as bpf
@@ -10,11 +9,11 @@ from flask_sqlalchemy import SQLAlchemy
 # End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Load Database Configuration
-db = yaml.load(open("./db.yaml"), yaml.Loader)
+dbconf = yaml.load(open("./db.yaml"), yaml.Loader)
 
 # Establish Database Connection
-cnx = mysql.connector.connect(user = db['mysql_user'], password = db['mysql_password'],
-                              host = db['mysql_host'], database = db['mysql_db'])
+cnx = mysql.connector.connect(user = dbconf['mysql_user'], password = dbconf['mysql_password'],
+                              host = dbconf['mysql_host'], database = dbconf['mysql_db'])
 
 # End Database Connector----------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -49,6 +48,9 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root@/peterpan?unix_socket=/cloudsql/hw3-ahuja15:us-central1:hw3-ahuja15'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
+
+# Import ORM
+import orm
 
 # Route to landing page
 @app.route("/", methods=['GET', 'POST'])

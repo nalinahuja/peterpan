@@ -41,14 +41,13 @@ then
   command cd ../..
 fi
 
-# # Display Prompt
-# command echo -e "load: Starting Flask server"
-#
-# # Export Server Environment Variables
-# export FLASK_APP=app.py
-#
-# # Start Flask Server
+# Display Prompt
+command echo -e "load: Starting Flask server"
+
+# Export Server Environment Variables
+export FLASK_APP=app.py
+
+# Start Flask Server
 # command flask run
-#
-# # Unset Fields
-# unset DATABASE_DIR DATABASE_CONFIG
+
+command python3 ./app.py
