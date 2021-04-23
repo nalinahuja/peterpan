@@ -6,7 +6,7 @@ import mysql.connector
 # End Imports--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Load Database Configuration
-dbconf = yaml.load(open(os.path.realpath("../../db.yaml")), yaml.Loader)
+dbconf = yaml.load(open(os.environ["DATABASE_CONFIG"]), yaml.Loader)
 
 # Establish Database Connection
 cnx = mysql.connector.connect(user = dbconf['mysql_user'], password = dbconf['mysql_password'],
