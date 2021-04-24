@@ -47,7 +47,7 @@ app = Flask(__name__)
 
 # Configure Flask Application
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:''@localhost/peterpan'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:' +dbconf['mysql_password'] + '@localhost/project1'
 
 # End Server Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -248,11 +248,11 @@ def sell():
 def transaction_history(user_id):
     cursor = cnx.cursor()
     transaction_query = """
-                        SELECT * 
+                        SELECT *
                         FROM Transaction t
                         JOIN User_Transaction u
                         ON t.transaction_id = u.transaction_id
-                        WHERE u.user_id = %s; 
+                        WHERE u.user_id = %s;
                         """
     cursor.execute(transaction_query, user_id)
     return 0
@@ -268,11 +268,11 @@ def user_info(user_id):
 def watchlist(user_id):
     cursor = cnx.cursor()
     watchlist_query = """
-                        SELECT * 
+                        SELECT *
                         FROM Watchlist w
                         JOIN Stock s
                         ON w.stock_id = s.stock_id
-                        WHERE w.user_id = %s; 
+                        WHERE w.user_id = %s;
                         """
     cursor.execute(watchlist_query, user_id)
     return 0
