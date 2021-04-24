@@ -2,7 +2,6 @@ import os
 import yaml
 import globl
 import mysql.connector
-import buy_page_function as bpf
 
 from flask import Flask, request, redirect, render_template
 from flask_sqlalchemy import SQLAlchemy
@@ -201,43 +200,26 @@ def buy():
         cnx.commit()
 
         #print confirmation table into /templates/confirmation.html
-        bpf.confirmation_table(int(number),stock_id,stock_name,spent,remaining)
-
-        return redirect('/buy_confirmation')
+        confirmation_info = [number,stock_id,stock_name,spent,remaining];
 
 
-    #remove buy.html and create it. Make sure buy.html is an empty file
-    #every time before writing to it
-    if os.path.exists("templates/buy.html"):
-        os.remove("templates/buy.html")
-    buy_page = open("templates/buy.html", "x")
+        return render_template("confirmation.html", data = confirmation_info)
 
-    #buy_template.html contains code for asking user which stock_id
-    #they want to buy and how many they want to buy
-    buy_template_page = open("templates/buy_template.html", "r")
 
     #initialize purchase page
-    bpf.load_purchase_page(buy_page,buy_template_page)
+    stock_info = []
 
     #execute the query for getting all stock information
     cursor.execute(get_stock)
 
     #display stock in the UI interface
-    bpf.display_stock(cursor,buy_page)
+    for stock_id, name, price, share in cursor:
+        stock_info.append((stock_id,name,price,share))
 
-    #end of html
-    buy_page.write("\n</html>")
-    buy_page.close()
+    cursor.close()
     #copy all of the code inside buy_template.html into buy.html
     #cursor.close()
-    return (render_template('buy.html'))
-
-@app.route('/buy_confirmation')
-def purchase():
-    if os.path.exists("templates/confirmation.html"):
-        return (render_template('confirmation.html'))
-    else:
-        return "No Information yet"
+    return render_template("buy_page.html", data = stock_info)
 
 # Page to display when user clicks sell stock
 @app.route('/sell')

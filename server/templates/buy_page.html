@@ -30,3 +30,13 @@
     <th>Price</th>
     <th>Share</th>
   </tr>
+  {% for stock_id,name,price,share in data %}
+  <tr>
+    <th>{{stock_id}}</th>
+    <th>{{name}}</th>
+    <th>{{price}}</th>
+    <th>{{share}}</th>
+  </tr>
+  {% endfor %}
+</table>
+</html>
