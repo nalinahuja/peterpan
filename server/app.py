@@ -6,6 +6,7 @@ import mysql.connector
 from flask import Flask, request, redirect, render_template
 from flask_sqlalchemy import SQLAlchemy
 
+
 # End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Load Database Configuration
@@ -21,7 +22,7 @@ cnx = mysql.connector.connect(user = dbconf['mysql_user'], password = dbconf['my
 get_stock = "SELECT stock_id, name, price, share FROM Stock;"
 user_account_money = "SELECT balance FROM User Where user_id = %s;"
 get_stock_by_stock_id = "SELECT name,price,share FROM Stock Where stock_id = %s;"
-get_user_balance = "SELECT balance FROM User Where user_id = 0;"
+get_user_balance = "SELECT balance FROM User Where user_id = %s;"
 get_watchlist = "SELECT stock_id FROM Watchlist Where user_id = %s AND stock_id = %s;"
 get_transaction_number = "SELECT COUNT(*) FROM User_Transaction"
 get_amount_bought = "SELECT SUM(t.amount) FROM Transaction t, User_Transaction ut WHERE t.transaction_id = ut.transaction_id AND ut.type = 1 AND stock_id = %s AND user_id = %s;"
@@ -62,7 +63,7 @@ globl.SQL_ALCHEMY_DB = db
 
 # Import ORM Module
 import orm
-
+from orm import User
 # End ORM Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Route to landing page
@@ -77,17 +78,49 @@ def home():
         #if a user clicks on sell stock
         if user_data.get("sell"):
             return redirect('/sell')
-
+        #if a user wants to register
+        if user_data.get("register"):
+            return redirect('/register')
+        #if a user wants to view the transaction
         if (user_data.get("transactions")):
             return (redirect("/transactions"))
 
     return (render_template('index.html'))
 
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    cursor = cnx.cursor()
+    if (request.method == 'POST'):
+        # Fetch user's input data
+        user_data = request.form
+        input_user_id = user_data["user_id"]
+        input_password = user_data["password"]
+        confirm_password = user_data["confirm_password"]
+        #check if password equals confirm_password
+        if(input_password != confirm_password):
+            return "Password doesn't match!"
+        cursor_input = (input_user_id,)
+        cursor.execute(get_user_balance,cursor_input)
+        #check if the user id has already existed
+        balance = -9999
+        for cur in cursor:
+            balance = cur
+        if(balance != -9999):
+            return "User ID exists"
+        #use ORM to add users
+        new_user = User(user_id = input_user_id,balance = 25000, password = input_password)
+        db.session.add(new_user)
+        db.session.commit()
+        return (render_template('register_success.html'))
+    return (render_template('register.html'))
+    cursor.close()
 
+
+    return (render_template('index.html'))
 @app.route("/stock/<name>", methods = ["GET", "POST"])
 def stock(name):
     # todo, list the stock with the name
-    return "hello"
+    return name
 
 @app.route("/stock", methods = ["GET", "POST"])
 def stockf():
@@ -149,7 +182,7 @@ def buy():
             return "Invalid stock ID. Please Go back and try again"
 
         #get user balance
-        cursor.execute(get_user_balance)
+        cursor.execute(get_user_balance,0)
         balance = -5
         for user_balance in cursor:
             balance = user_balance[0]
