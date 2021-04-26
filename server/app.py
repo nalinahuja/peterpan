@@ -182,7 +182,9 @@ def buy():
             return "Invalid stock ID. Please Go back and try again"
 
         #get user balance
-        cursor.execute(get_user_balance,0)
+        #TODO in the cur_info below, we should input the current user_id instead of 0
+        cur_info = (0,)
+        cursor.execute(get_user_balance,cur_info)
         balance = -5
         for user_balance in cursor:
             balance = user_balance[0]
