@@ -6,6 +6,7 @@ import mysql.connector
 from flask import Flask, request, redirect, render_template
 from flask_sqlalchemy import SQLAlchemy
 
+
 # End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Load Database Configuration
@@ -20,8 +21,9 @@ cnx = mysql.connector.connect(user = dbconf['mysql_user'], password = dbconf['my
 # Query for getting all current stock information
 get_stock = "SELECT stock_id, name, price, share FROM Stock;"
 user_account_money = "SELECT balance FROM User Where user_id = %s;"
+get_stock_by_stock_name = "SELECT stock_id,price,share FROM Stock Where name = %s;"
 get_stock_by_stock_id = "SELECT name,price,share FROM Stock Where stock_id = %s;"
-get_user_balance = "SELECT balance FROM User Where user_id = 0;"
+get_user_balance = "SELECT balance FROM User Where user_id = %s;"
 get_watchlist = "SELECT stock_id FROM Watchlist Where user_id = %s AND stock_id = %s;"
 get_transaction_number = "SELECT COUNT(*) FROM User_Transaction"
 get_amount_bought = "SELECT SUM(t.amount) FROM Transaction t, User_Transaction ut WHERE t.transaction_id = ut.transaction_id AND ut.type = 1 AND stock_id = %s AND user_id = %s;"
@@ -34,7 +36,7 @@ get_transactions = """
                    WHERE U.user_id = {}
                    """
 update_stock_share = "UPDATE Stock SET share = %s WHERE stock_id = %s;"
-update_user_balance = "UPDATE User SET balance = %s WHERE user_id = 0;"
+update_user_balance = "UPDATE User SET balance = %s WHERE user_id = %s;"
 insert_user_transaction = "INSERT INTO User_Transaction (transaction_id,type,user_id,stock_id) VALUES (%s,%s,%s,%s);"
 insert_transaction = "INSERT INTO Transaction (transaction_id,amount,date,price) VALUES (%s,%s,%s,%s);"
 insert_watchlist = "INSERT INTO Watchlist (user_id,stock_id) VALUES (%s, %s);"
@@ -62,7 +64,7 @@ globl.SQL_ALCHEMY_DB = db
 
 # Import ORM Module
 import orm
-
+from orm import User
 # End ORM Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Route to landing page
@@ -72,22 +74,68 @@ def home():
         # Fetch user's input data
         user_data = request.form
         #if a user clicks on buy stock
+        if user_data.get("search"):
+            search_info = user_data["search_info"]
+            url = '/search/' + search_info
+            return redirect(url)
         if user_data.get("buy"):
             return redirect('/buy')
         #if a user clicks on sell stock
         if user_data.get("sell"):
             return redirect('/sell')
-
+        #if a user wants to register
+        if user_data.get("register"):
+            return redirect('/register')
+        #if a user wants to view the transaction
         if (user_data.get("transactions")):
             return (redirect("/transactions"))
-
     return (render_template('index.html'))
+
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    cursor = cnx.cursor()
+    if (request.method == 'POST'):
+        # Fetch user's input data
+        user_data = request.form
+        input_user_id = user_data["user_id"]
+        input_password = user_data["password"]
+        confirm_password = user_data["confirm_password"]
+        #check if password equals confirm_password
+        if(input_password != confirm_password):
+            return "Password doesn't match!"
+        cursor_input = (input_user_id,)
+        cursor.execute(get_user_balance,cursor_input)
+        #check if the user id has already existed
+        balance = -9999
+        for cur in cursor:
+            balance = cur
+        if(balance != -9999):
+            return "User ID exists"
+        #use ORM to add users
+        new_user = User(user_id = input_user_id,balance = 25000, password = input_password)
+        db.session.add(new_user)
+        db.session.commit()
+        return (render_template('register_success.html'))
+    cursor.close()
+    return (render_template('register.html'))
+
+
+#route for search page
+@app.route("/search/<search_info>", methods=['GET', 'POST'])
+def search(search_info):
+    cursor = cnx.cursor()
+    data = search_function(search_info,cursor)
+    if(data == -1):
+        return "Stock not found"
+    cursor.close()
+    return render_template("search.html",data=data)
+
 
 
 @app.route("/stock/<name>", methods = ["GET", "POST"])
 def stock(name):
     # todo, list the stock with the name
-    return "hello"
+    return name
 
 @app.route("/stock", methods = ["GET", "POST"])
 def stockf():
@@ -149,7 +197,9 @@ def buy():
             return "Invalid stock ID. Please Go back and try again"
 
         #get user balance
-        cursor.execute(get_user_balance)
+        #TODO in the cur_info below, we should input the current user_id instead of 0
+        cur_info = (0,)
+        cursor.execute(get_user_balance,cur_info)
         balance = -5
         for user_balance in cursor:
             balance = user_balance[0]
@@ -166,11 +216,13 @@ def buy():
         cnx.commit()
 
         #update user_balance
-        update_info = (remaining,)
+        #TODO update the current user_id here
+        update_info = (remaining,0)
         cursor.execute(update_user_balance,update_info)
         cnx.commit()
 
         #update Watchlist
+        #TODO put current user_id instead of 0
         get_info = (0,stock_id)
         cursor.execute(get_watchlist,get_info)
         check = -1
@@ -195,6 +247,7 @@ def buy():
 
 
         #update user_transaction
+        #TODO update into current user_id below
         insert_info = (transaction_id,1,0,stock_id)
         cursor.execute(insert_user_transaction,insert_info)
         cnx.commit()
@@ -258,6 +311,50 @@ def watchlist(user_id):
                         """
     cursor.execute(watchlist_query, user_id)
     return 0
+# End Router Function----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+# Functions
+#search_function: get user's search keyword(either stock_Id or stock name)
+#and find if it is in Database
+#if it is in database, then return stock information
+def search_function(search_word,cursor):
+    #check if the user
+    input_token = (search_word,)
+    result = []
+    stock_id = -1
+    stock_name = ""
+    stock_price = -1
+    stock_share = -1
+    if(search_word.isnumeric()):
+        #if the user inputs the stock id
+        cursor.execute(get_stock_by_stock_id,input_token)
+        for name,price,share in cursor:
+            stock_price = price
+            stock_share = share
+            stock_name = name
+        #stock exists
+        if(stock_price != -1):
+            result.append(search_word)
+            result.append(stock_name)
+            result.append(stock_price)
+            result.append(stock_share)
+            return result
+    else:
+        #if the user inputs the stock name
+        cursor.execute(get_stock_by_stock_name,input_token)
+        for id,price,share in cursor:
+            stock_id = id
+            stock_share = share
+            stock_price = price
+        #stock exists
+        if(stock_id != -1):
+            result.append(stock_id)
+            result.append(search_word)
+            result.append(stock_price)
+            result.append(stock_share)
+            return result
+    return -1
 
 # Start Server
 if __name__ == "__main__":
