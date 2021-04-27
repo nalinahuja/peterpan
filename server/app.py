@@ -46,7 +46,7 @@ app = Flask(__name__)
 
 # Configure Flask Application
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:' +dbconf['mysql_password'] + '@localhost/' + dbconf['mysql_db']
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:' + dbconf['mysql_password'] + '@localhost/' + dbconf['mysql_db']
 
 # End Server Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
 
