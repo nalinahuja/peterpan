@@ -12,9 +12,11 @@ if (not(confirm == "y")):
 
 # Set Database Configuration Path
 os.environ["DATABASE_CONFIG"] = "./db.yaml"
+os.environ["FLASK_ENV"] = "development"
+os.environ["FLASK_APP"] = "app.py"
 
 # Display Prompt
 print("start: Starting Flask server")
 
 # Start Flask Server
-os.system("python3 app.py")
+os.system("flask run")

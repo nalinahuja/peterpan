@@ -1,11 +1,11 @@
 import os
+import ui
 import yaml
 import globl
 import mysql.connector
 
-from flask import Flask, request, redirect, render_template
 from flask_sqlalchemy import SQLAlchemy
-
+from flask import Flask, request, redirect, render_template
 
 # End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -89,7 +89,8 @@ def home():
         #if a user wants to view the transaction
         if (user_data.get("transactions")):
             return (redirect("/transactions"))
-    return (render_template('index.html'))
+
+    return (render_template('index.html', navbar = ui.navbar()))
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -115,9 +116,9 @@ def register():
         new_user = User(user_id = input_user_id,balance = 25000, password = input_password)
         db.session.add(new_user)
         db.session.commit()
-        return (render_template('register_success.html'))
+        return (render_template('register_success.html', navbar = ui.navbar()))
     cursor.close()
-    return (render_template('register.html'))
+    return (render_template('register.html', navbar = ui.navbar()))
 
 
 #route for search page
@@ -128,7 +129,7 @@ def search(search_info):
     if(data == -1):
         return "Stock not found"
     cursor.close()
-    return render_template("search.html",data=data)
+    return render_template("search.html",data = data, navbar = ui.navbar())
 
 
 
@@ -167,7 +168,7 @@ def transaction():
 
     cursor.close()
 
-    return render_template("transactions.html", data = t_list)
+    return render_template("transactions.html", data = t_list, navbar = ui.navbar())
 
 # Page to display when user clicks buy stock
 @app.route('/buy', methods = ["GET", "POST"])
@@ -256,7 +257,7 @@ def buy():
         confirmation_info = [number,stock_id,stock_name,spent,remaining];
 
 
-        return render_template("confirmation.html", data = confirmation_info)
+        return render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar())
 
 
     #initialize purchase page
@@ -272,12 +273,12 @@ def buy():
     cursor.close()
     #copy all of the code inside buy_template.html into buy.html
     #cursor.close()
-    return render_template("buy_page.html", data = stock_info)
+    return render_template("buy_page.html", data = stock_info, navbar = ui.navbar())
 
 # Page to display when user clicks sell stock
 @app.route('/sell')
 def sell():
-    return (render_template('sell.html'))
+    return (render_template('sell.html', navbar = ui.navbar()))
 
 @app.route('/transaction_history/<user_id>')
 def transaction_history(user_id):
