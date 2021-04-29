@@ -4,6 +4,7 @@ import yaml
 import globl
 import mysql.connector
 
+from collections import defaultdict
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, redirect, render_template
 
@@ -17,6 +18,9 @@ cnx = mysql.connector.connect(user = dbconf['mysql_user'], password = dbconf['my
                               host = dbconf['mysql_host'], database = dbconf['mysql_db'])
 
 # End Database Connector----------------------------------------------------------------------------------------------------------------------------------------------
+
+# Database Constants
+BUY, SELL = 1, 0
 
 # Query for getting all current stock information
 get_stock = "SELECT stock_id, name, price, share FROM Stock;"
@@ -90,7 +94,135 @@ def home():
         if (user_data.get("transactions")):
             return (redirect("/transactions"))
 
-    return (render_template('index.html', navbar = ui.navbar(), arr = str([1, 2, 3, 4])))
+    # Stock Data
+    num_stocks = num_shares = 0
+
+    # Open Database Cursor
+    cursor = cnx.cursor()
+
+    # Query To Fetch Number Of Stocks In Market
+    query = """
+            SELECT COUNT(*) AS result
+            FROM Stock;
+            """
+
+    # Execute Query
+    cursor.execute(query)
+
+    # Fetch Data
+    for result in (cursor):
+        num_stocks = int(result[0])
+
+    # Query To Fetch Number Of Stocks In Market
+    query = """
+            SELECT SUM(share) AS result
+            FROM Stock;
+            """
+
+    # Execute Query
+    cursor.execute(query)
+
+    # Fetch Data
+    for result in (cursor):
+        num_shares = int(result[0])
+
+    # Stock Market Data
+    transaction_cnt = avg_buy_price = avg_sell_price = None
+
+    # Query To Fetch Number Of Transactions In 24hr
+    query = """
+            SELECT COUNT(*) AS result
+            FROM Transaction
+            WHERE 86400 <= UNIX_TIMESTAMP() - date;
+            """
+
+    # Execute Query
+    cursor.execute(query)
+
+    # Fetch Data
+    for result in (cursor):
+        transaction_cnt = int(result[0])
+
+    # Query To Fetch Number Of Stocks In Market
+    query = """
+            SELECT type, AVG(price)
+            FROM Transaction JOIN User_Transaction ON Transaction.transaction_id = User_Transaction.transaction_id
+            WHERE 86400 <= UNIX_TIMESTAMP() - date
+            GROUP BY type
+            UNION
+            SELECT type, AVG(price)
+            FROM Transaction JOIN Group_Transaction ON Transaction.transaction_id = Group_Transaction.transaction_id
+            WHERE 86400 <= UNIX_TIMESTAMP() - date
+            GROUP BY type;
+            """
+
+    # Execute Query
+    cursor.execute(query)
+
+    # Format Prices
+    avg_buy_price = "{:.2f}".format(sum(t[1] for t in cursor if (t[0] == BUY)))
+    avg_sell_price = "{:.2f}".format(sum(t[1] for t in cursor if (t[0] == SELL)))
+
+    # Get Newest Historical Stock Prices
+    query = """
+            SELECT stock_id, price_change AS avg_price
+            FROM Stock_Update WHERE update_id = 0
+            GROUP BY stock_id
+            UNION
+            SELECT stock_id, price_change AS avg_price
+            FROM Stock_Update WHERE update_id = 49
+            GROUP BY stock_id;
+            """
+
+    # Execute Query
+    cursor.execute(query)
+
+    stocks = defaultdict(int)
+
+    for result in (cursor):
+        if (not(result[0] in stocks)):
+            stocks[result[0]] = result[1]
+        else:
+            stocks[result[0]] += result[1]
+            stocks[result[0]] /= 2
+
+    # Get Stocks Ranked By Growth
+    stock_rank = sorted(stocks.items(), key = lambda x : x[1], reverse = True)
+
+    # Initialize Name List
+    namelist = []
+
+    # Initialize Data Lists
+    datalists = []
+
+    for stock_id, _ in (stock_rank[:2]):
+        query = """
+                SELECT price_change
+                FROM Stock_Update
+                WHERE stock_id = {}
+                """
+
+        cursor.execute(query.format(stock_id))
+        datalist = [pc[0] for pc in cursor]
+        datalists.append(datalist)
+
+        query = """
+                SELECT name
+                FROM Stock
+                WHERE stock_id = {}
+                """
+
+        cursor.execute(query.format(stock_id))
+
+        # Fetch Data
+        for result in (cursor):
+            namelist.append(str(result[0]))
+
+    # Close Cursor
+    cursor.close()
+
+    # Render Index Template
+    return (render_template('index.html', navbar = ui.navbar(), num_stocks = num_stocks, num_shares = num_shares, transaction_cnt = transaction_cnt, avg_buy_price = avg_buy_price, avg_sell_price = avg_sell_price, stock_name_1 = namelist[0], stock_name_2 = namelist[1], price_arr_1 = str(datalists[0]), price_arr_2 = str(datalists[1])))
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
