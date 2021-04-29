@@ -1,2 +1,43 @@
-<h1>Sell</h1>
+<!-- This is a template for sell page-->
+<!DOCTYPE html>
+<html>
+
+<!-- Title of the page-->
+<head>
+<title>Sell page</title>
+</head>
+
 {{ navbar | safe }}
+
+<form method="POST" action="">
+  <!-- area that let user enter the stock_id they want to buy-->
+  <label for="stock_id">Stock_id:</label><br>
+  <input type="text" name = "stock_id" id="stock_id"><br>
+
+
+  <!-- area that let user enter the number of stocks they want to buy-->
+  <label for="number">Number</label><br>
+  <input type="text" name = "number" id="number"><br>
+  <br>
+  <br>
+
+  <!--submit button-->
+  <input type="submit" name = "buy" value="buy">
+</form>
+<table border = '3' style="width:60%">
+  <tr>
+    <th>Stock_id</th>
+    <th>Stock name</th>
+    <th>Price</th>
+    <th>Share</th>
+  </tr>
+  {% for stock_id,name,price,share in data %}
+  <tr>
+    <th>{{stock_id}}</th>
+    <th>{{name}}</th>
+    <th>{{price}}</th>
+    <th>{{share}}</th>
+  </tr>
+  {% endfor %}
+</table>
+</html>

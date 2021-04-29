@@ -6,12 +6,58 @@
 <body>
   {{ navbar | safe }}
 
-  <!-- add statistics like average price of sold share on the server -->
-  <!-- add statistics like number of shares bought in the last hour -->
-  <!-- add statistics like number of shares bought in the last day -->
-  <!-- insert top two trending stock graphs here -->
-  <!-- add number about total market -->
+  <br>
+  <center><h2>Market Info</h2></center>
 
+  <center>
+    <i>Stocks In Market:</i> {{ num_stocks }} |
+    <i>Share Transactions Today: </i> {{ share_transaction_cnt }} |
+    <i>Average Buy Price Today:</i> {{ avg_buy_price }} |
+    <i>Average Sell Price Today:</i> {{ avg_sell_price }}
+  </center>
+
+  <hr style="width:95%;">
+  <center><h2>Top Stocks</h2></center>
+
+  <div id="Stocks"></div>
+
+  <script>
+    var layout = {
+      title: 'Title of the Graph',
+      xaxis: {
+        title: 'time'
+      },
+      yaxis: {
+        title: 'price (usd)'
+      }
+    };
+
+    var stockGraph1 = {
+      time: new Array(),
+      price: {{ price_arr_1 }},
+      type: 'scatter'
+    };
+
+    for (i in stockGraph1.price.length) {
+      stockGraph1.time.push(i);
+    }
+
+    var stockGraph2 = {
+      time: new Array(),
+      price: {{ price_arr_2 }},
+      type: 'scatter'
+    };
+
+    for (i in stockGraph2.price.length) {
+      stockGraph2.time.push(i);
+    }
+
+    var data = [stockGraph1, stockGraph2];
+
+    Plotly.newPlot("Stocks", stockGraph1, layout);
+  </script>
+
+  <hr style="width:95%;">
   <p>testing only</p>
 
   <form method="POST" action="">

@@ -90,7 +90,11 @@ def home():
         if (user_data.get("transactions")):
             return (redirect("/transactions"))
 
-    return (render_template('index.html', navbar = ui.navbar()))
+    return (render_template('index.html', navbar = ui.navbar(), arr = str([1, 2, 3, 4])))
+
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    return (render_template('login.html', navbar = ui.navbar()))
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
