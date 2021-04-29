@@ -1,0 +1,28 @@
+<!-- This is HTML file for login page-->
+<!-- TODO: Complete authentication on server/client side -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login Page</title>
+  </head>
+  <body>
+    {{ navbar | safe }}
+
+    <center>
+      <br>
+      <br>
+      <form method="POST" action="">
+        <!-- area that let user enter the account they want to login with -->
+        <label for="user_id">User ID:</label><br>
+        <input type="number" step="1" name = "user_id" id="user_id"><br><br>
+        <!-- area that let user enter the password-->
+        <label for="password">Password:</label><br>
+        <input type="password" name = "password" id="password"><br>
+        <br>
+        <!--submit button-->
+        <input type="submit" name = "register" value="register">
+      </form>
+    </center>
+  </body>
+</html>
