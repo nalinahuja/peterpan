@@ -53,8 +53,8 @@
       type: 'scatter'
     };
 
-    for (var i = 0; i < stockGraph1.y.length; i++) {
-      stockGraph1.x.push(i);
+    for (var i = stockGraph1.y.length; i >= 0; i--) {
+      stockGraph1.x.push("-" + i);
     }
 
     var data = [stockGraph1];
@@ -77,8 +77,8 @@
       type: 'scatter'
     };
 
-    for (var i = 0; i < stockGraph2.y.length; i++) {
-      stockGraph2.x.push(i);
+    for (var i = stockGraph2.y.length; i >= 0; i--) {
+      stockGraph2.x.push("-" + i);
     }
 
     var data = [stockGraph2];

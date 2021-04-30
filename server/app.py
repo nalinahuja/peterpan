@@ -83,7 +83,6 @@ from orm import User
 # Route to landing page
 @app.route("/", methods=['GET', 'POST'])
 def home():
-    update_job()
     if (request.method == 'POST'):
         # Fetch user's input data
         user_data = request.form
