@@ -3,6 +3,7 @@ import ui
 import time
 import yaml
 import globl
+import random
 import datetime
 import mysql.connector
 
@@ -82,6 +83,7 @@ from orm import User
 # Route to landing page
 @app.route("/", methods=['GET', 'POST'])
 def home():
+    update_job()
     if (request.method == 'POST'):
         # Fetch user's input data
         user_data = request.form
@@ -536,16 +538,17 @@ def update_job():
         # Create New Stock History
         for stock_id in sorted(stock_prices):
             # Get Stock Price
-            price = stock_prices[stock_id]
-            
+            new_price = stock_prices[stock_id]
+
             # Get Increase Or Decrease Direction
             id = int(random.randint(0, 1))
 
             # Calculate Price Delta
             delta = float(random.random() * MAXIMUM_PRICE_CHANGE) * (-1 if (id == 0) else 1)
 
-            # Calculate New Price
-            new_price = price + delta
+            if (new_price + delta > 10):
+                # Calculate New Price
+                new_price += delta
 
             # Create Dynamic SQL Query
             history_update_query = """
@@ -553,14 +556,14 @@ def update_job():
                                    VALUES (%s, %s, %s);
                                    """
 
-           # Format History Tuple
-           history_data = (int(latest_update_id), int(stock_id), float(new_price))
+            # Format History Tuple
+            history_data = (int(latest_update_id), int(stock_id), float(new_price))
 
-           # Insert New Stock Tuple
-           cursor.execute(history_update_query, history_data)
+            # Insert New Stock Tuple
+            cursor.execute(history_update_query, history_data)
 
-           # Commit Data To Database
-           cnx.commit()
+            # Commit Data To Database
+            cnx.commit()
 
         # Close Database Cursor
         cursor.close()
@@ -575,6 +578,7 @@ if __name__ == "__main__":
 
     # Start Update Process
     update_process.start()
+    update_process.join()
 
     # Start Flask App
     app.run(debug = True)

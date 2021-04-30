@@ -17,20 +17,20 @@ cursor = cnx.cursor()
 
 # End Database Connection--------------------------------------------------------------------------------------------------------------------------------------------
 
-# Delete Update Table
-cursor.execute("DELETE FROM `Stock_Update`;")
-
-# Delete Stock Table
-cursor.execute("DELETE FROM `Stock`;")
-
-# Delete User Transaction Table
+# Delete From All Tables
+cursor.execute("DELETE FROM `Group_Transaction`;")
 cursor.execute("DELETE FROM `User_Transaction`;")
-
-# Delete Transaction Table
 cursor.execute("DELETE FROM `Transaction`;")
 
-# Delete User Table
+cursor.execute("DELETE FROM `Group_Stock`;")
+cursor.execute("DELETE FROM `Group_Users`;")
+cursor.execute("DELETE FROM `Group_Info`;")
+
+cursor.execute("DELETE FROM `Watchlist`;")
 cursor.execute("DELETE FROM `User`;")
+
+cursor.execute("DELETE FROM `Stock_Update`;")
+cursor.execute("DELETE FROM `Stock`;")
 
 # Commit Data To Database
 cnx.commit()
