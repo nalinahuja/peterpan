@@ -1,14 +1,25 @@
 import os
 import ui
+import time
 import yaml
 import globl
+import datetime
 import mysql.connector
 
 from collections import defaultdict
+from multiprocessing import Process
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, redirect, render_template
 
 # End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Maximum Price Change
+MAXIMUM_PRICE_CHANGE = 20
+
+# Transaction Constants
+BUY, SELL = 1, 0
+
+# Server Constants----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Load Database Configuration
 dbconf = yaml.load(open(os.environ["DATABASE_CONFIG"]), yaml.Loader)
@@ -18,9 +29,6 @@ cnx = mysql.connector.connect(user = dbconf['mysql_user'], password = dbconf['my
                               host = dbconf['mysql_host'], database = dbconf['mysql_db'])
 
 # End Database Connector----------------------------------------------------------------------------------------------------------------------------------------------
-
-# Database Constants
-BUY, SELL = 1, 0
 
 # Query for getting all current stock information
 get_stock = "SELECT stock_id, name, price, share FROM Stock;"
@@ -409,7 +417,7 @@ def buy():
     cursor.close()
     #copy all of the code inside buy_template.html into buy.html
     #cursor.close()
-    return render_template("buy_page.html", data = stock_info, navbar = ui.navbar())
+    return render_template("buy.html", data = stock_info, navbar = ui.navbar())
 
 # Page to display when user clicks sell stock
 @app.route('/sell')
@@ -493,6 +501,80 @@ def search_function(search_word,cursor):
             return result
     return -1
 
+def update_job():
+    # Get System Time
+    now = datetime.datetime.now()
+
+    # Sleep Till Next 5 Minute Mark
+    time.sleep((now.minute % 5) * 60)
+
+    while (True):
+        # Create Database Cursor
+        cursor = cnx.cursor()
+
+        # Query For Latest Stock Prices
+        latest_stock_prices = """
+                              SELECT *
+                              FROM Stock_Update
+                              WHERE update_id = (SELECT MAX(update_id) FROM Stock_update);
+                              """
+
+        # Execute Query
+        cursor.execute(latest_stock_prices)
+
+        # Initialize Latest Update Idenfitier
+        latest_update_id = None
+
+        # Initialize Stock Dictionary
+        stock_prices = defaultdict(float)
+
+        # Get All Stock Prices
+        for update_id, stock_id, price in (cursor):
+            stock_prices[stock_id] = price
+            latest_update_id = update_id + 1
+
+        # Create New Stock History
+        for stock_id in sorted(stock_prices):
+            # Get Stock Price
+            price = stock_prices[stock_id]
+            
+            # Get Increase Or Decrease Direction
+            id = int(random.randint(0, 1))
+
+            # Calculate Price Delta
+            delta = float(random.random() * MAXIMUM_PRICE_CHANGE) * (-1 if (id == 0) else 1)
+
+            # Calculate New Price
+            new_price = price + delta
+
+            # Create Dynamic SQL Query
+            history_update_query = """
+                                   INSERT INTO Stock_Update (update_id, stock_id, price_change)
+                                   VALUES (%s, %s, %s);
+                                   """
+
+           # Format History Tuple
+           history_data = (int(latest_update_id), int(stock_id), float(new_price))
+
+           # Insert New Stock Tuple
+           cursor.execute(history_update_query, history_data)
+
+           # Commit Data To Database
+           cnx.commit()
+
+        # Close Database Cursor
+        cursor.close()
+
+        # Update At Next 5 Minute Mark
+        time.sleep(5 * 60)
+
 # Start Server
 if __name__ == "__main__":
+    # Create Database Subprocess
+    update_process = Process(target = update_job)
+
+    # Start Update Process
+    update_process.start()
+
+    # Start Flask App
     app.run(debug = True)
