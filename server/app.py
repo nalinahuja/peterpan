@@ -516,9 +516,39 @@ def buy():
     #cursor.close()
     return render_template("buy.html", data = stock_info, navbar = ui.navbar(request))
 
-@app.route('/sell')
+@app.route('/sell', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
 def sell():
+    cursor = cnx.cursor();
+    if (request.method == 'POST'):
+      #if the user clicks on any button, record his response
+      userDetails = request.form
+      stock_id = userDetails["stock_id"]
+      number = userDetails["number"]
+      data = (int(stock_id),)
+
+      #get stock price for the stock that the user wants to sell
+      cursor.execute(get_stock_by_stock_id, data)
+      stock_price = 0
+      stock_share = 0
+      stock_name = ""
+      for name, price, share in cursor:
+        stock_name = name
+        stock_price = price
+        stock_share = share
+      #if the stock price is 0  
+      if (stock_price == 0):
+        return "Invalid stock ID. Please go back and try again"
+
+      #decrease stock share after the user sells it
+      stock_share = stock_share - int(number)
+      update_info = (stock_share, stock_id)
+      cursor.execute(update_stock_share, update_info)
+      cnx.commit()
+      
+      #update Watchlist
+      
+      
     return (render_template('sell.html', navbar = ui.navbar(request)))
 
 @app.route('/group_transaction_history/<group_id>')
