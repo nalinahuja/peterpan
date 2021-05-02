@@ -548,14 +548,18 @@ def user_info(user_id):
 def watchlist(user_id):
     cursor = cnx.cursor()
     watchlist_query = """
-                        SELECT *
+                        SELECT s.stock_id, s.name, s.price, s.share
                         FROM Watchlist w
                         JOIN Stock s
                         ON w.stock_id = s.stock_id
                         WHERE w.user_id = %s;
                         """
     cursor.execute(watchlist_query, user_id)
-    return 0
+    watch_info = list()
+    for stock_id, stock_name, stock_price, stock_shares in cursor:
+        watch_info.append((stock_id, stock_name, stock_price, stock_shares))
+        
+    return render_template("watchlist.html", data = watch_info, navbar = ui.navbar(request))
 
 # End Router Functions----------------------------------------------------------------------------------------------------------------------------------------------------
 
