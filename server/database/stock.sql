@@ -1,4 +1,5 @@
 -- REMOVE FOR PRODUCTION RELEASE
+
 DROP TABLE IF EXISTS `Group_Transaction`;
 DROP TABLE IF EXISTS `User_Transaction`;
 DROP TABLE IF EXISTS `Transaction`;
@@ -7,6 +8,7 @@ DROP TABLE IF EXISTS `Group_Stock`;
 DROP TABLE IF EXISTS `Group_Users`;
 DROP TABLE IF EXISTS `Group_Info`;
 
+DROP TABLE IF EXISTS `User_Stock`;
 DROP TABLE IF EXISTS `Watchlist`;
 DROP TABLE IF EXISTS `User`;
 

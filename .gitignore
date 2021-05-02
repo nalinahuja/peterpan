@@ -19,6 +19,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Data Files
+history.csv
+stock.csv
+
 # Distribution / packaging
 .Python
 build/
