@@ -14,7 +14,17 @@
       <br>
       <h2>401 Unauthorized</h2>
       <br>
-      <p>You attempted to access a resource not available to you</p>
+      <p id="message">You attempted to access a resource not available to you!</p>
     </center>
+
+    <script>
+      window.setTimeout(function() {
+        // Set Redirect Message
+        document.getElementById("message").innerHTML = "Redirecting to home page..."
+
+        // Redirect To Homepage
+        window.location.href = "/";
+      }, 2500);
+    </script>
   </body>
 </html>
