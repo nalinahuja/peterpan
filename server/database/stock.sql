@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS `User` (
 
 CREATE TABLE IF NOT EXISTS `User_Stock` (
   -- Attributes
-  `user_id` int(11) NOT NULL,
+  `user_id` varchar(30) NOT NULL,
   `stock_id` int(11) NOT NULL,
   `amount` FLOAT NOT NULL,
 
