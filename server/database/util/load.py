@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 
 # Declare Database Configuration Path
 os.environ["DATABASE_CONFIG"] = os.path.realpath("../../db.yaml")
