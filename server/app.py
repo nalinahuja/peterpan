@@ -25,7 +25,7 @@ BUY, SELL = 1, 0
 # Server Constants----------------------------------------------------------------------------------------------------------------------------------------------------
 
 def change_stock_price():
-    update_stock_every_5_minutes()
+    update_job()
 
 #update the stock every 5 minutes in background
 #!!!IMPORTANT
@@ -568,6 +568,64 @@ def search_function(search_word,cursor):
             result.append(stock_share)
             return result
     return -1
+
+def update_job():
+    # Create Database Cursor
+    cursor = cnx.cursor()
+
+    # Query For Latest Stock Prices
+    latest_stock_prices = """
+                          SELECT *
+                          FROM Stock_Update
+                          WHERE update_id = (SELECT MAX(update_id) FROM Stock_update);
+                          """
+
+    # Execute Query
+    cursor.execute(latest_stock_prices)
+
+    # Initialize Latest Update Idenfitier
+    latest_update_id = None
+
+    # Initialize Stock Dictionary
+    stock_prices = defaultdict(float)
+
+    # Get All Stock Prices
+    for update_id, stock_id, price in (cursor):
+        stock_prices[stock_id] = price
+        latest_update_id = update_id + 1
+
+    # Create New Stock History
+    for stock_id in sorted(stock_prices):
+        # Get Stock Price
+        new_price = stock_prices[stock_id]
+
+        # Get Increase Or Decrease Direction
+        id = int(random.randint(0, 1))
+
+        # Calculate Price Delta
+        delta = float(random.random() * MAXIMUM_PRICE_CHANGE) * (-1 if (id == 0) else 1)
+
+        if (new_price + delta > 10):
+            # Calculate New Price
+            new_price += delta
+
+        # Create Dynamic SQL Query
+        history_update_query = """
+                               INSERT INTO Stock_Update (update_id, stock_id, price_change)
+                               VALUES (%s, %s, %s);
+                               """
+
+        # Format History Tuple
+        history_data = (int(latest_update_id), int(stock_id), float(new_price))
+
+        # Insert New Stock Tuple
+        cursor.execute(history_update_query, history_data)
+
+        # Commit Data To Database
+        cnx.commit()
+
+    # Close Database Cursor
+    cursor.close()
 
 #changed the stock price every 5 minutes and add the record into stock_update
 def update_stock_every_5_minutes():

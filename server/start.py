@@ -12,7 +12,7 @@ if (not(confirm == "y")):
 
 # Set Database Configuration Path
 os.environ["DATABASE_CONFIG"] = "./db.yaml"
-#os.environ["FLASK_ENV"] = "development"
+os.environ["FLASK_ENV"] = "development"
 os.environ["FLASK_APP"] = "app.py"
 os.environ["DEBUG"]= "False"
 
