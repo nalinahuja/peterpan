@@ -1,5 +1,5 @@
 # Enter your host below
-mysql_host: "35.202.203.76"
+mysql_host: "localhost"
 
 # Enter your user name below
 mysql_user: "root"
