@@ -10,7 +10,7 @@ os.environ["DATABASE_CONFIG"] = os.path.realpath("../../db.yaml")
 print("\rload: Creating dataset ", end = "")
 
 # Create SQL Data
-os.system("python3 ./create.py")
+os.system("python3 ./database/util/create.py")
 
 # Verify Data Files
 if (not(os.path.isfile("../stock.csv")) or not(os.path.isfile("../history.csv"))):
