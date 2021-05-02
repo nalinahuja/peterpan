@@ -26,6 +26,7 @@ cursor.execute("DELETE FROM `Group_Stock`;")
 cursor.execute("DELETE FROM `Group_Users`;")
 cursor.execute("DELETE FROM `Group_Info`;")
 
+cursor.execute("DELETE FROM `User_Stock`;")
 cursor.execute("DELETE FROM `Watchlist`;")
 cursor.execute("DELETE FROM `User`;")
 
