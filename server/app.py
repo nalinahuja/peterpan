@@ -521,18 +521,18 @@ def buy():
 def sell():
     return (render_template('sell.html', navbar = ui.navbar(request)))
 
-@app.route('/transaction_history/<user_id>')
+@app.route('/group_transaction_history/<group_id>')
 @jwt_required(locations = ['cookies'])
-def transaction_history(user_id):
+def transaction_history(group_id):
     cursor = cnx.cursor()
     transaction_query = """
                         SELECT *
                         FROM Transaction t
-                        JOIN User_Transaction u
-                        ON t.transaction_id = u.transaction_id
-                        WHERE u.user_id = %s;
+                        JOIN Group_Transaction g
+                        ON t.transaction_id = g.transaction_id
+                        WHERE g.group_id = %s;
                         """
-    cursor.execute(transaction_query, user_id)
+    cursor.execute(transaction_query, group_id)
     return 0
 
 @app.route('/user/<user_id>')

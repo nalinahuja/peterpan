@@ -1,11 +1,11 @@
 # Enter your host below
-mysql_host: "localhost"
+mysql_host: "35.202.203.76"
 
 # Enter your user name below
 mysql_user: "root"
 
 # Enter your password in field below
-mysql_password: ""
+mysql_password: "fairytail12"
 
 # Enter your database name below
-mysql_db: "peterpan"
+mysql_db: "db1"

@@ -17,11 +17,11 @@ SET @amount = (SELECT amount
 
 IF @type = 1 THEN
     UPDATE User_Stock
-	SET shares = shares + @amount
+	SET shares = amount + @amount
 	WHERE stock_id = new.stock_id AND user_id = new.user_id
 ELSE
     UPDATE User_Stock
-	SET shares = shares - @amount
+	SET shares = amount - @amount
 	WHERE stock_id = new.stock_id AND user_id = new.user_id
 END IF;
 
