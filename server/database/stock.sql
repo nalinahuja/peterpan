@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS `Stock` (
   PRIMARY KEY (`stock_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+CREATE INDEX Stock_index ON Stock(stock_id) USING HASH;
+
 -- --------------------------------------------------------
 
 --
@@ -47,6 +49,8 @@ CREATE TABLE IF NOT EXISTS `Stock_Update` (
   PRIMARY KEY (`update_id`, `stock_id`),
   FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE INDEX Update_index ON Stock_Update(update_id) USING HASH;
 
 -- --------------------------------------------------------
 
