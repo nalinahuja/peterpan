@@ -1,5 +1,4 @@
 <!-- This is HTML file for login page-->
-<!-- TODO: Complete authentication on server/client side -->
 
 <!DOCTYPE html>
 <html>
@@ -20,8 +19,15 @@
         <label for="password">Password:</label><br>
         <input type="password" name = "password" id="password"><br>
         <br>
+
+        {% if error %}
+          <p style="color:red;">We could not find an account with those credentials, please try again.</p>
+        {% endif %}
+
         <!--submit button-->
-        <input type="submit" name = "register" value="register">
+        <input type="submit" name = "login" value="Login">
+        <br><br>
+        <a href="/register">Create Account</a>
       </form>
     </center>
   </body>

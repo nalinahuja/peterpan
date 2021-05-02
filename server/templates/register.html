@@ -9,21 +9,26 @@
 
 {{ navbar | safe }}
 
-<form method="POST" action="">
-  <!-- area that let user enter the account they want to register-->
-  <label for="user_id">User ID:</label><br>
-  <input type="number" step="1" name = "user_id" id="user_id"><br><br>
-  <!-- area that let user enter the password-->
-  <label for="password">Password:</label><br>
-  <input type="password" name = "password" id="password"><br>
+<center>
   <br>
+  <form method="POST" action="">
+    <!-- area that let user enter the account they want to register-->
+    <label for="user_id">User ID:</label><br>
+    <input type="number" step="1" name = "user_id" id="user_id"><br><br>
+    <!-- area that let user enter the password-->
+    <label for="password">Password:</label><br>
+    <input type="password" name = "password" id="password"><br>
+    <br>
 
-  <!-- area that let user confirm the password-->
-  <label for="confirm_password">Confirm Password:</label><br>
-  <input type="password" name = "confirm_password" id="confirm_password"><br>
-  <br>
-  <br>
+    <!-- area that let user confirm the password-->
+    <label for="confirm_password">Confirm Password:</label><br>
+    <input type="password" name = "confirm_password" id="confirm_password"><br>
+    <br>
+    <br>
 
-  <!--submit button-->
-  <input type="submit" name = "register" value="register">
-</form>
+    <!--submit button-->
+    <input type="submit" name = "register" value="register">
+    <br><br>
+    <a href="/login">Sign In Instead</a>
+  </form>
+</center>

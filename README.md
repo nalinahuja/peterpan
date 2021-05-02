@@ -16,5 +16,5 @@ Inside ./server/db.yaml, enter your database information (mysql_host, mysql_pass
 Then run the following command:
 
 ```bash
-command python3 start.py
+command python3 ./server/start.py
 ```

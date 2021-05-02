@@ -1,6 +1,14 @@
 import os
 
-def navbar():
+def navbar(request):
+    # Set Default Navbar Fields
+    href, outline, text = "/login", "primary", "Login"
+
+    # Update Navbar Fields
+    if (request.cookies.get('access_token_cookie')):
+        href, outline, text = "/logoff", "danger", "Logoff"
+
+    # Return Navbar To Caller
     return """
             <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
             <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light">
@@ -39,9 +47,9 @@ def navbar():
 
                 <ul class="navbar-nav">
                   <li class="nav-item active">
-                    <a href="/login"><button type="button" class="btn btn-outline-primary">Login</button></a>
+                    <a href="{}"><button type="button" class="btn btn-outline-{}">{}</button></a>
                   </li>
                 </ul>
               </div>
             </nav>
-           """
+           """.format(href, outline, text)

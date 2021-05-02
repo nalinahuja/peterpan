@@ -10,7 +10,8 @@ import mysql.connector
 from collections import defaultdict
 from multiprocessing import Process
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template, jsonify, make_response
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, unset_access_cookies
 
 # End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -60,8 +61,10 @@ insert_watchlist = "INSERT INTO Watchlist (user_id,stock_id) VALUES (%s, %s);"
 app = Flask(__name__)
 
 # Configure Flask Application
+app.config['SECRET_KEY'] = '537e3275e714ff299e49'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:' + dbconf['mysql_password'] + '@localhost/' + dbconf['mysql_db']
+app.config.setdefault('JWT_ACCESS_COOKIE_NAME', 'access_token_cookie')
 
 # End Server Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -77,10 +80,24 @@ globl.SQL_ALCHEMY_DB = db
 
 # Import ORM Module
 import orm
+
+# Import User Table From ORM
 from orm import User
+
 # End ORM Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Route to landing page
+# Set JWT Token Location
+JWT_TOKEN_LOCATION = ['cookies']
+
+# Configure JWT Manager
+jwt = JWTManager(app)
+
+@jwt.unauthorized_loader
+def unauthorized(callback):
+    return (render_template('401.html', navbar = ui.navbar(request)))
+
+# End Authentication Initialization------------------------------------------------------------------------------------------------------------------------------------------------------
+
 @app.route("/", methods=['GET', 'POST'])
 def home():
     if (request.method == 'POST'):
@@ -231,11 +248,52 @@ def home():
     cursor.close()
 
     # Render Index Template
-    return (render_template('index.html', navbar = ui.navbar(), num_stocks = num_stocks, num_shares = num_shares, transaction_cnt = transaction_cnt, avg_buy_price = avg_buy_price, avg_sell_price = avg_sell_price, stock_name_1 = namelist[0], stock_name_2 = namelist[1], price_arr_1 = str(datalists[0]), price_arr_2 = str(datalists[1])))
+    return (render_template('index.html', navbar = ui.navbar(request), num_stocks = num_stocks, num_shares = num_shares, \
+                            transaction_cnt = transaction_cnt, avg_buy_price = avg_buy_price, avg_sell_price = avg_sell_price, \
+                            stock_name_1 = namelist[0], stock_name_2 = namelist[1], price_arr_1 = str(datalists[0]), price_arr_2 = str(datalists[1])))
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    return (render_template('login.html', navbar = ui.navbar()))
+    if (request.method == 'POST'):
+        # Fetch user's input data
+        user_data = request.form
+        input_user_id = user_data["user_id"]
+        input_password = user_data["password"]
+
+        # Get User Object Using ORM
+        obj = User.query.filter_by(user_id = input_user_id, password = input_password).first()
+
+        # Verify Return From Database
+        if (obj is None):
+            # Update View
+            return (render_template('login.html', navbar = ui.navbar(request), credential_error = True))
+
+        # Create Response
+        response = make_response(redirect('/users/{}'.format(obj.user_id)))
+
+        # Create Access Token
+        access_token = create_access_token(identity = input_user_id)
+
+        # Set Access Cookies In Response
+        set_access_cookies(response, access_token)
+
+        # Return Response To
+        return (response)
+
+    # Render Default Login Page
+    return (render_template('login.html', navbar = ui.navbar(request), form_error = True))
+
+@app.route("/logoff", methods=['GET', 'POST'])
+@jwt_required(locations = ['cookies'])
+def logoff():
+    # Fetch User Access Token
+    response = make_response(redirect('/login'))
+
+    # Revoke Access Cookies
+    unset_access_cookies(response)
+
+    # Send Response
+    return (response)
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -261,12 +319,10 @@ def register():
         new_user = User(user_id = input_user_id,balance = 25000, password = input_password)
         db.session.add(new_user)
         db.session.commit()
-        return (render_template('register_success.html', navbar = ui.navbar()))
+        return (render_template('register_success.html', navbar = ui.navbar(request)))
     cursor.close()
-    return (render_template('register.html', navbar = ui.navbar()))
+    return (render_template('register.html', navbar = ui.navbar(request)))
 
-
-#route for search page
 @app.route("/search/<search_info>", methods=['GET', 'POST'])
 def search(search_info):
     cursor = cnx.cursor()
@@ -274,22 +330,17 @@ def search(search_info):
     if(data == -1):
         return "Stock not found"
     cursor.close()
-    return render_template("search.html",data = data, navbar = ui.navbar())
-
-
+    return render_template("search.html",data = data, navbar = ui.navbar(request))
 
 @app.route("/stock/<name>", methods = ["GET", "POST"])
-def stock(name):
-    # todo, list the stock with the name
-    return name
-
 @app.route("/stock", methods = ["GET", "POST"])
-def stockf():
+def stock():
     # todo, list top 10 stocks, all stocks
     return "hello"
 
 # Page to display the transaciton history
 @app.route("/transactions", methods = ["GET", "POST"])
+@jwt_required(locations = ['cookies'])
 def transaction():
     # Creating the cursor
     cursor = cnx.cursor()
@@ -313,10 +364,11 @@ def transaction():
 
     cursor.close()
 
-    return render_template("transactions.html", data = t_list, navbar = ui.navbar())
+    return render_template("transactions.html", data = t_list, navbar = ui.navbar(request))
 
 # Page to display when user clicks buy stock
 @app.route('/buy', methods = ["GET", "POST"])
+@jwt_required(locations = ['cookies'])
 def buy():
     # Create Database Cursor
     cursor = cnx.cursor()
@@ -402,7 +454,7 @@ def buy():
         confirmation_info = [number,stock_id,stock_name,spent,remaining];
 
 
-        return render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar())
+        return render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar(request))
 
 
     #initialize purchase page
@@ -418,14 +470,16 @@ def buy():
     cursor.close()
     #copy all of the code inside buy_template.html into buy.html
     #cursor.close()
-    return render_template("buy.html", data = stock_info, navbar = ui.navbar())
+    return render_template("buy.html", data = stock_info, navbar = ui.navbar(request))
 
 # Page to display when user clicks sell stock
 @app.route('/sell')
+@jwt_required(locations = ['cookies'])
 def sell():
-    return (render_template('sell.html', navbar = ui.navbar()))
+    return (render_template('sell.html', navbar = ui.navbar(request)))
 
 @app.route('/transaction_history/<user_id>')
+@jwt_required(locations = ['cookies'])
 def transaction_history(user_id):
     cursor = cnx.cursor()
     transaction_query = """
@@ -439,6 +493,7 @@ def transaction_history(user_id):
     return 0
 
 @app.route('/user/<user_id>')
+@jwt_required(locations = ['cookies'])
 def user_info(user_id):
     cursor = cnx.cursor()
     user_query = "SELECT * FROM User u WHERE u.user_id = %s;"
@@ -446,6 +501,7 @@ def user_info(user_id):
     return 0
 
 @app.route('/watchlist/<user_id>')
+@jwt_required(locations = ['cookies'])
 def watchlist(user_id):
     cursor = cnx.cursor()
     watchlist_query = """
@@ -457,13 +513,9 @@ def watchlist(user_id):
                         """
     cursor.execute(watchlist_query, user_id)
     return 0
-# End Router Function----------------------------------------------------------------------------------------------------------------------------------------------------
 
+# End Router Functions----------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Functions
-#search_function: get user's search keyword(either stock_Id or stock name)
-#and find if it is in Database
-#if it is in database, then return stock information
 def search_function(search_word,cursor):
     #check if the user
     input_token = (search_word,)
@@ -570,6 +622,8 @@ def update_job():
         # Update At Next 5 Minute Mark
         time.sleep(5 * 60)
 
+# End Backend Functions---------------------------------------------------------------------------------------------------------------------------------------------------
+
 # Start Server
 if __name__ == "__main__":
     # Create Database Subprocess
@@ -577,7 +631,6 @@ if __name__ == "__main__":
 
     # Start Update Process
     update_process.start()
-    update_process.join()
 
     # Start Flask App
     app.run(debug = True)
