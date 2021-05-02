@@ -6,3 +6,4 @@ mysql-connector
 Flask-SQLAlchemy
 mysql-connector-python
 mysqlclient
+APScheduler

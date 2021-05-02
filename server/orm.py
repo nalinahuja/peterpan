@@ -5,7 +5,6 @@ class Stock(db.Model):
     stock_id = db.Column(db.Integer, primary_key = True, nullable = False)
     name = db.Column(db.String(10), nullable = False)
     price = db.Column(db.Float, nullable = False)
-    balance = db.Column(db.Float, nullable = False)
 
 class Stock_Update(db.Model):
     __tablename__ = 'Stock_Update'
