@@ -1,6 +1,6 @@
 # Project Files
 todo
-db.yaml
+./server/db.yaml
 
 # MacOS Files
 .DS_Store
@@ -9,7 +9,7 @@ db.yaml
 .vscode
 
 # User Scripts
-start.py
+./server/start.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
