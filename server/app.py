@@ -24,18 +24,6 @@ BUY, SELL = 1, 0
 
 # Server Constants----------------------------------------------------------------------------------------------------------------------------------------------------
 
-def change_stock_price():
-    update_job()
-
-#update the stock every 5 minutes in background
-#!!!IMPORTANT
-#Warning: This scheduler will run twice if debug mode is ON.
-#The Werkzeug reloader spawns a child process so that it can restart that process each time your code changes."
-#Werkzeug is the library that supplies Flask with the development server
-scheduler = BackgroundScheduler()
-scheduler.add_job(change_stock_price, 'interval', minutes = 5)
-scheduler.start()
-
 # Load Database Configuration
 dbconf = yaml.load(open(os.environ["DATABASE_CONFIG"]), yaml.Loader)
 
@@ -102,6 +90,25 @@ from orm import Stock
 from orm import Stock_Update
 
 # End ORM Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
+
+def change_stock_tables():
+    # Update Stock Table
+    # stock_table_job()
+
+    # Update Stock_Update Table
+    update_stock_every_5_minutes()
+
+#update the stock every 5 minutes in background
+#!!!IMPORTANT
+#Warning: This scheduler will run twice if debug mode is ON.
+#The Werkzeug reloader spawns a child process so that it can restart that process each time your code changes."
+#Werkzeug is the library that supplies Flask with the development server
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(change_stock_tables, 'interval', minutes = 1)
+scheduler.start()
+
+# End Server Jobs-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Set JWT Token Location
 JWT_TOKEN_LOCATION = ['cookies']
@@ -281,7 +288,7 @@ def login():
         # Verify Return From Database
         if (obj is None):
             # Update View
-            return (render_template('login.html', navbar = ui.navbar(request), credential_error = True))
+            return (render_template('login.html', navbar = ui.navbar(request), error = True))
 
         # Create Response
         response = make_response(redirect('/users/{}'.format(obj.user_id)))
@@ -292,11 +299,11 @@ def login():
         # Set Access Cookies In Response
         set_access_cookies(response, access_token)
 
-        # Return Response To
+        # Return Response To Client
         return (response)
 
     # Render Default Login Page
-    return (render_template('login.html', navbar = ui.navbar(request), form_error = True))
+    return (render_template('login.html', navbar = ui.navbar(request), error = False))
 
 @app.route("/logoff", methods=['GET', 'POST'])
 @jwt_required(locations = ['cookies'])
@@ -334,7 +341,27 @@ def register():
         new_user = User(user_id = input_user_id,balance = 25000, password = input_password)
         db.session.add(new_user)
         db.session.commit()
-        return (render_template('register_success.html', navbar = ui.navbar(request)))
+
+        # Get User Object Using ORM
+        obj = User.query.filter_by(user_id = input_user_id, password = input_password).first()
+
+        # Verify Return From Database
+        if (obj is None):
+            # Update View
+            return (render_template('login.html', navbar = ui.navbar(request), error = True))
+
+        # Create Response
+        response = make_response(render_template('register_success.html', navbar = ui.navbar(request)))
+
+        # Create Access Token
+        access_token = create_access_token(identity = input_user_id)
+
+        # Set Access Cookies In Response
+        set_access_cookies(response, access_token)
+
+        # Return Response To Client
+        return (response)
+
     cursor.close()
     return (render_template('register.html', navbar = ui.navbar(request)))
 
@@ -569,15 +596,64 @@ def search_function(search_word,cursor):
             return result
     return -1
 
-def update_job():
+def stock_table_job():
     # Create Database Cursor
     cursor = cnx.cursor()
 
     # Query For Latest Stock Prices
     latest_stock_prices = """
-                          SELECT *
-                          FROM Stock_Update
-                          WHERE update_id = (SELECT MAX(update_id) FROM Stock_update);
+                          SELECT stock_id, price
+                          FROM Stock;
+                          """
+
+    # Execute Query
+    cursor.execute(latest_stock_prices)
+
+    # Initialize Stock Dictionary
+    stock_prices = defaultdict(float)
+
+    # Get All Stock Prices
+    for stock_id, price in (cursor):
+        stock_prices[stock_id] = price
+
+    # Create New Stock History
+    for stock_id in sorted(stock_prices):
+        # Get Stock Price
+        new_price = stock_prices[stock_id]
+
+        # Get Increase Or Decrease Direction
+        id = int(random.randint(0, 1))
+
+        # Calculate Price Delta
+        delta = float(random.random() * MAXIMUM_PRICE_CHANGE) * (-1 if (id == 0) else 1)
+
+        if (new_price + delta > 10):
+            # Calculate New Price
+            new_price += delta
+
+        # Create Dynamic SQL Query
+        history_update_query = """
+                               UPDATE Stock
+                               SET price = {:.2f}
+                               WHERE stock_id = {}
+                               """
+        # Insert New Stock Tuple
+        cursor.execute(history_update_query.format(new_price, stock_id))
+
+        # Commit Data To Database
+        cnx.commit()
+
+    # Close Database Cursor
+    cursor.close()
+
+def stock_update_table_job():
+    # Create Database Cursor
+    cursor = cnx.cursor()
+
+    # Query For Latest Stock Prices
+    latest_stock_prices = """
+                          SELECT stock_id, price
+                          FROM Stock;
                           """
 
     # Execute Query
@@ -586,13 +662,25 @@ def update_job():
     # Initialize Latest Update Idenfitier
     latest_update_id = None
 
+    # Query For Latest Stock Prices
+    latest_stock_update = """
+                          SELECT COUNT(*)
+                          FROM Stock_Update;
+                          """
+
+    # Execute Query
+    cursor.execute(latest_stock_update)
+
+    # Fetch Result From Cursor
+    for result in (latest_stock_update):
+        latest_update_id = int(latest_stock_update[0]) + 1
+
     # Initialize Stock Dictionary
     stock_prices = defaultdict(float)
 
     # Get All Stock Prices
-    for update_id, stock_id, price in (cursor):
+    for stock_id, price in (cursor):
         stock_prices[stock_id] = price
-        latest_update_id = update_id + 1
 
     # Create New Stock History
     for stock_id in sorted(stock_prices):
@@ -614,7 +702,6 @@ def update_job():
                                INSERT INTO Stock_Update (update_id, stock_id, price_change)
                                VALUES (%s, %s, %s);
                                """
-
         # Format History Tuple
         history_data = (int(latest_update_id), int(stock_id), float(new_price))
 
@@ -627,7 +714,7 @@ def update_job():
     # Close Database Cursor
     cursor.close()
 
-#changed the stock price every 5 minutes and add the record into stock_update
+# #changed the stock price every 5 minutes and add the record into stock_update
 def update_stock_every_5_minutes():
     cursor = cnx.cursor()
     print ("update started")

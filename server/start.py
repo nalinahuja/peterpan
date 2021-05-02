@@ -14,7 +14,7 @@ if (not(confirm == "y")):
 os.environ["DATABASE_CONFIG"] = "./db.yaml"
 os.environ["FLASK_ENV"] = "development"
 os.environ["FLASK_APP"] = "app.py"
-os.environ["DEBUG"]= "False"
+os.environ["DEBUG"] = "False"
 
 # Display Prompt
 print("start: Starting Flask server")

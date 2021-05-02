@@ -9,5 +9,15 @@
 <br>
 <center>
 <h1>Register Successful. Thank you!</h1>
-<a href="http://127.0.0.1:5000/">Back to Main Page</a>
+<br>
+<p id="message"></p>
+<script>
+  window.setTimeout(function() {
+    // Set Redirect Message
+    document.getElementById("message").innerHTML = "Redirecting to home page..."
+
+    // Redirect To Homepage
+    window.location.href = "/";
+  }, 2500);
+</script>
 <center>
