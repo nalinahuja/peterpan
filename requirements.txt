@@ -7,3 +7,4 @@ Flask-SQLAlchemy
 mysql-connector-python
 mysqlclient
 Flask-JWT-Extended
+APScheduler

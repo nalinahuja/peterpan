@@ -10,7 +10,8 @@ import mysql.connector
 from collections import defaultdict
 from multiprocessing import Process
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, request, redirect, render_template, jsonify, make_response
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask import Flask, request, redirect, render_template, make_response
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, unset_access_cookies
 
 # End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -22,6 +23,18 @@ MAXIMUM_PRICE_CHANGE = 20
 BUY, SELL = 1, 0
 
 # Server Constants----------------------------------------------------------------------------------------------------------------------------------------------------
+
+def change_stock_price():
+    update_stock_every_5_minutes()
+
+#update the stock every 5 minutes in background
+#!!!IMPORTANT
+#Warning: This scheduler will run twice if debug mode is ON.
+#The Werkzeug reloader spawns a child process so that it can restart that process each time your code changes."
+#Werkzeug is the library that supplies Flask with the development server
+scheduler = BackgroundScheduler()
+scheduler.add_job(change_stock_price, 'interval', minutes = 5)
+scheduler.start()
 
 # Load Database Configuration
 dbconf = yaml.load(open(os.environ["DATABASE_CONFIG"]), yaml.Loader)
@@ -49,6 +62,8 @@ get_transactions = """
                    ON U.stock_id = S.stock_id
                    WHERE U.user_id = {}
                    """
+get_max_update_id = "SELECT MAX(update_id) FROM Stock_Update"
+get_number_of_stock = "SELECT MAX(stock_id) FROM Stock"
 update_stock_share = "UPDATE Stock SET share = %s WHERE stock_id = %s;"
 update_user_balance = "UPDATE User SET balance = %s WHERE user_id = %s;"
 insert_user_transaction = "INSERT INTO User_Transaction (transaction_id,type,user_id,stock_id) VALUES (%s,%s,%s,%s);"
@@ -81,8 +96,10 @@ globl.SQL_ALCHEMY_DB = db
 # Import ORM Module
 import orm
 
-# Import User Table From ORM
+# Import Tables From ORM
 from orm import User
+from orm import Stock
+from orm import Stock_Update
 
 # End ORM Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -220,14 +237,12 @@ def home():
 
     # Initialize Data Lists
     datalists = []
-
     for stock_id, _ in (stock_rank[:2]):
         query = """
                 SELECT price_change
                 FROM Stock_Update
                 WHERE stock_id = {}
                 """
-
         cursor.execute(query.format(stock_id))
         datalist = [pc[0] for pc in cursor]
         datalists.append(datalist)
@@ -554,83 +569,54 @@ def search_function(search_word,cursor):
             return result
     return -1
 
-def update_job():
-    # Get System Time
-    now = datetime.datetime.now()
+#changed the stock price every 5 minutes and add the record into stock_update
+def update_stock_every_5_minutes():
+    cursor = cnx.cursor()
+    print ("update started")
+    #get maximum number of update id
+    cursor.execute(get_max_update_id)
+    max_update_id = 0
+    for cur in cursor:
+        max_update_id = cur
+    max_update_id = max_update_id[0]
+    max_update_id += 1
 
-    # Sleep Till Next 5 Minute Mark
-    time.sleep((now.minute % 5) * 60)
+    #get total number of stocks in stock table
+    cursor.execute(get_number_of_stock)
+    num_of_stock = 0
+    for cur in cursor:
+        num_of_stock = cur
+    num_of_stock = num_of_stock[0]
 
-    while (True):
-        # Create Database Cursor
-        cursor = cnx.cursor()
+    #loop through all of the stocks
+    for i in range(num_of_stock):
+        #generate a random number for price change
+        id = int(random.randint(0, 1))
+        delta = float(random.random() * MAXIMUM_PRICE_CHANGE) * (-1 if (id == 0) else 1)
 
-        # Query For Latest Stock Prices
-        latest_stock_prices = """
-                              SELECT *
-                              FROM Stock_Update
-                              WHERE update_id = (SELECT MAX(update_id) FROM Stock_update);
-                              """
+        #get stock information
+        input_token = (i,)
+        cursor.execute(get_stock_by_stock_id,input_token)
+        stock_name = ""
+        stock_price,stock_share = 0,0
+        for name,price,share in cursor:
+            stock_name,stock_price,stock_share  = name,price,share
+        new_price = stock_price + delta
+        #if the new price is negative or zero, then just do nothing
+        if(new_price <= 0) : continue
 
-        # Execute Query
-        cursor.execute(latest_stock_prices)
-
-        # Initialize Latest Update Idenfitier
-        latest_update_id = None
-
-        # Initialize Stock Dictionary
-        stock_prices = defaultdict(float)
-
-        # Get All Stock Prices
-        for update_id, stock_id, price in (cursor):
-            stock_prices[stock_id] = price
-            latest_update_id = update_id + 1
-
-        # Create New Stock History
-        for stock_id in sorted(stock_prices):
-            # Get Stock Price
-            new_price = stock_prices[stock_id]
-
-            # Get Increase Or Decrease Direction
-            id = int(random.randint(0, 1))
-
-            # Calculate Price Delta
-            delta = float(random.random() * MAXIMUM_PRICE_CHANGE) * (-1 if (id == 0) else 1)
-
-            if (new_price + delta > 10):
-                # Calculate New Price
-                new_price += delta
-
-            # Create Dynamic SQL Query
-            history_update_query = """
-                                   INSERT INTO Stock_Update (update_id, stock_id, price_change)
-                                   VALUES (%s, %s, %s);
-                                   """
-
-            # Format History Tuple
-            history_data = (int(latest_update_id), int(stock_id), float(new_price))
-
-            # Insert New Stock Tuple
-            cursor.execute(history_update_query, history_data)
-
-            # Commit Data To Database
-            cnx.commit()
-
-        # Close Database Cursor
-        cursor.close()
-
-        # Update At Next 5 Minute Mark
-        time.sleep(5 * 60)
-
-# End Backend Functions---------------------------------------------------------------------------------------------------------------------------------------------------
+        #update the stock price using ORM
+        stock_spec = Stock.query.filter_by(stock_id=i).first()
+        stock_spec.price = new_price
+        db.session.commit()
+        new_update = Stock_Update(update_id=max_update_id, stock_id = i, price_change = delta)
+        db.session.add(new_update)
+        db.session.commit()
+        #update the stock change using ORM
+    print("update ended")
+    cursor.close()
 
 # Start Server
 if __name__ == "__main__":
-    # Create Database Subprocess
-    update_process = Process(target = update_job)
-
-    # Start Update Process
-    update_process.start()
-
     # Start Flask App
-    app.run(debug = True)
+    app.run(debug=True)
