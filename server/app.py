@@ -539,9 +539,12 @@ def transaction_history(user_id):
 @jwt_required(locations = ['cookies'])
 def user_info(user_id):
     cursor = cnx.cursor()
-    user_query = "SELECT * FROM User u WHERE u.user_id = %s;"
+    user_query = """
+                 SELECT * FROM User u WHERE u.user_id = %s;
+                 """
     cursor.execute(user_query, user_id)
-    return 0
+
+    return render_template("user.html", data = user_info, navbar = ui.navbar(request))
 
 @app.route('/watchlist/<user_id>')
 @jwt_required(locations = ['cookies'])
@@ -558,7 +561,7 @@ def watchlist(user_id):
     watch_info = list()
     for stock_id, stock_name, stock_price, stock_shares in cursor:
         watch_info.append((stock_id, stock_name, stock_price, stock_shares))
-        
+
     return render_template("watchlist.html", data = watch_info, navbar = ui.navbar(request))
 
 # End Router Functions----------------------------------------------------------------------------------------------------------------------------------------------------

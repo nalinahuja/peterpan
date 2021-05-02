@@ -67,6 +67,24 @@ CREATE TABLE IF NOT EXISTS `User` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `User_Stock`
+--
+
+CREATE TABLE IF NOT EXISTS `User_Stock` (
+  -- Attributes
+  `user_id` int(11) NOT NULL,
+  `stock_id` int(11) NOT NULL,
+  `amount` FLOAT NOT NULL,
+
+  -- Keys
+  PRIMARY KEY (`user_id`, `stock_id`),
+  FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`),
+  FOREIGN KEY (`user_id`) REFERENCES User(`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `Watchlist`
 --
 
@@ -125,6 +143,7 @@ CREATE TABLE IF NOT EXISTS `Group_Stock` (
   -- Attributes
   `group_id` int(11) NOT NULL,
   `stock_id` int(11) NOT NULL,
+  `amount` FLOAT NOT NULL,
 
   -- Keys
   PRIMARY KEY (`group_id`, `stock_id`),
