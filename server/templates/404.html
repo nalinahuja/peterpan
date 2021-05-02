@@ -1,0 +1,30 @@
+<!-- This is HTML file for login page-->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login Page</title>
+  </head>
+  <body>
+    {{ navbar | safe }}
+
+    <center>
+      <br>
+      <br>
+      <br>
+      <h2>404 Page Not Found</h2>
+      <br>
+      <p id="message">You attempted to access a resource does not exist!</p>
+    </center>
+
+    <script>
+      window.setTimeout(function() {
+        // Set Redirect Message
+        document.getElementById("message").innerHTML = "Redirecting to home page..."
+
+        // Redirect To Homepage
+        window.location.href = "/";
+      }, 2500);
+    </script>
+  </body>
+</html>

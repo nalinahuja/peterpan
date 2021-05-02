@@ -92,11 +92,8 @@ from orm import Stock_Update
 # End ORM Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
 
 def change_stock_tables():
-    # Update Stock Table
-    # stock_table_job()
-
-    # Update Stock_Update Table
-    update_stock_every_5_minutes()
+    # update_stock_every_5_minutes()
+    pass
 
 #update the stock every 5 minutes in background
 #!!!IMPORTANT
@@ -121,6 +118,11 @@ def unauthorized(callback):
     return (render_template('401.html', navbar = ui.navbar(request)))
 
 # End Authentication Initialization------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@app.errorhandler(404)
+def page_not_found(e):
+    # Return 404 page
+    return (render_template('404.html', navbar = ui.navbar(request))), 404
 
 @app.route("/", methods=['GET', 'POST'])
 def home():
@@ -514,7 +516,6 @@ def buy():
     #cursor.close()
     return render_template("buy.html", data = stock_info, navbar = ui.navbar(request))
 
-# Page to display when user clicks sell stock
 @app.route('/sell')
 @jwt_required(locations = ['cookies'])
 def sell():
