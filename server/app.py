@@ -576,7 +576,7 @@ def transaction_history(group_id):
 def user_info(user_id):
     cursor = cnx.cursor()
     user_query = """
-                 SELECT u.user_id, s.stock_id, s.name, s.price, us.amount 
+                 SELECT s.stock_id, s.name, s.price, us.amount 
                  FROM User u
                  JOIN User_Stock us
                  ON u.user_id = us.user_id
@@ -585,7 +585,9 @@ def user_info(user_id):
                  WHERE u.user_id = %s;
                  """
     cursor.execute(user_query, user_id)
-
+    user_info = list()
+    for stock_id, stock_name, stock_price, stock_shares in cursor:
+        user_info.append((stock_id, stock_name, stock_price, stock_shares))
     return render_template("user.html", data = user_info, navbar = ui.navbar(request))
 
 @app.route('/watchlist/<user_id>')
