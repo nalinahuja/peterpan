@@ -522,7 +522,7 @@ def buy():
         cnx.commit()
 
         #print confirmation table into /templates/confirmation.html
-        confirmation_info = [number,stock_id,stock_name,spent,remaining];
+        confirmation_info = [number,stock_id,stock_name,spent,remaining]
 
 
         return render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar(request))
@@ -546,7 +546,7 @@ def buy():
 @app.route('/sell', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
 def sell():
-    cursor = cnx.cursor();
+    cursor = cnx.cursor()
     if (request.method == 'POST'):
         #if the user clicks on any button, record his response
         userDetails = request.form
@@ -609,7 +609,7 @@ def sell():
         cnx.commit()
 
         #print confirmationt able into /tempates/confirmation.html
-        confirmation_info = [number, stock_id, stock_name, sold, remaining];
+        confirmation_info = [number, stock_id, stock_name, sold, remaining]
     
         return (render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar(request))
         
