@@ -583,9 +583,9 @@ def sell():
         get_info = (0, stock_id)
         cursor.execute(get_watchlist, get_info)
         check = -1
-        for id in cursor
+        for id in cursor:
           check = id
-        if (check == -1)
+        if (check == -1):
           cursor.execute(insert_watchlist, get_info)
           cnx.commmit()
   
