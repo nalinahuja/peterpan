@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `User_Stock` (
   -- Attributes
   `user_id` varchar(30) NOT NULL,
   `stock_id` int(11) NOT NULL,
-  `amount` FLOAT NOT NULL,
+  `amount` int(11) NOT NULL,
 
   -- Keys
   PRIMARY KEY (`user_id`, `stock_id`),
@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS `Group_Stock` (
   -- Attributes
   `group_id` int(11) NOT NULL,
   `stock_id` int(11) NOT NULL,
-  `amount` FLOAT NOT NULL,
+  `amount` int(11) NOT NULL,
 
   -- Keys
   PRIMARY KEY (`group_id`, `stock_id`),
@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS `Group_Stock` (
 CREATE TABLE IF NOT EXISTS `Transaction` (
   -- Attributes
   `transaction_id` int(11) NOT NULL,
-  `amount` FLOAT NOT NULL,
+  `amount` int(11) NOT NULL,
   `date`  int(11) NOT NULL,
   `price` FLOAT NOT NULL,
 
