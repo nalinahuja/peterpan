@@ -611,7 +611,7 @@ def sell():
         #print confirmationt able into /tempates/confirmation.html
         confirmation_info = [number, stock_id, stock_name, sold, remaining]
     
-        return (render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar(request))
+        return render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar(request))
         
     #initialize the sell page
     stock_info = []
