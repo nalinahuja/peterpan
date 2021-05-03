@@ -386,7 +386,7 @@ def stock_name():
         number = userDetails["number"]
         data = (int(stock_id),)
 
-        #get stock price for the stock user want to buy
+        #get stock price for the stock user want to view
         cursor.execute(get_stock_by_stock_id,data)
         stock_price = 0
         stock_share = 0
