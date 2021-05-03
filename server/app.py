@@ -399,7 +399,10 @@ def stock_name():
         #if there is no stock price
         if(stock_price == 0):
             return "Invalid stock ID. Please Go back and try again"
+        
+        stock_info = [stock_name, stock_price, stock_share]
 
+        return render_template("display_stock.html", data = stock_info, navbar = ui.navbar(request))     
 
 @app.route("/stock", methods = ["GET", "POST"])
 def stock():
