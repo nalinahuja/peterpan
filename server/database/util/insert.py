@@ -5,6 +5,7 @@ import mysql.connector
 
 # End Imports--------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
 # Load Database Configuration
 dbconf = yaml.load(open(os.environ["DATABASE_CONFIG"]), yaml.Loader)
 

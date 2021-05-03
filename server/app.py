@@ -556,21 +556,33 @@ def sell():
 def transaction_history(group_id):
     cursor = cnx.cursor()
     transaction_query = """
-                        SELECT *
+                        SELECT g.stock_id, s.name, t.amount, g.type, t.price, t.date
                         FROM Transaction t
                         JOIN Group_Transaction g
                         ON t.transaction_id = g.transaction_id
+                        JOIN Stock s
+                        ON g.stock_id = s.stock_id
                         WHERE g.group_id = %s;
                         """
     cursor.execute(transaction_query, group_id)
-    return 0
+    group_transaction = list()
+    for stock_id, stock_name, amount, transaction_type, price, date in cursor:
+        total_cost = amount * price
+        group_transaction.append((stock_id, stock_name, transaction_type, amount, price, total_cost, date))
+    return render_template("group_transactions.html", data = group_transaction, navbar = ui.navbar(request))
 
 @app.route('/user/<user_id>')
 @jwt_required(locations = ['cookies'])
 def user_info(user_id):
     cursor = cnx.cursor()
     user_query = """
-                 SELECT * FROM User u WHERE u.user_id = %s;
+                 SELECT u.user_id, s.stock_id, s.name, s.price, us.amount 
+                 FROM User u
+                 JOIN User_Stock us
+                 ON u.user_id = us.user_id
+                 JOIN Stock s
+                 ON us.stock_id = s.stock_id 
+                 WHERE u.user_id = %s;
                  """
     cursor.execute(user_query, user_id)
 
