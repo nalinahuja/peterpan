@@ -377,9 +377,33 @@ def search(search_info):
     return render_template("search.html",data = data, navbar = ui.navbar(request))
 
 @app.route("/stock/<name>", methods = ["GET", "POST"])
+def stock_name():
+    cursor = cnx.cursor()
+    if(request.method == 'POST'):
+      #if a user clicks on buy button,record his response
+        userDetails = request.form
+        stock_id = userDetails["stock_id"]
+        number = userDetails["number"]
+        data = (int(stock_id),)
+
+        #get stock price for the stock user want to buy
+        cursor.execute(get_stock_by_stock_id,data)
+        stock_price = 0
+        stock_share = 0
+        stock_name = ""
+        for name,price,share in cursor:
+            #print(price)
+            stock_name = name
+            stock_price = price
+            stock_share = share
+        #if there is no stock price
+        if(stock_price == 0):
+            return "Invalid stock ID. Please Go back and try again"
+
+
 @app.route("/stock", methods = ["GET", "POST"])
 def stock():
-    # todo, list top 10 stocks, all stocks
+    cursor = cnx.cursor()
     return "hello"
 
 # Page to display the transaciton history
