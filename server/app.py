@@ -600,7 +600,7 @@ def sell():
 
         #Update transaction table
         insert_info = (transaction_id, int(number), 0, stock_price)
-        cursor.execute(insert_transactionm insert_info)
+        cursor.execute(insert_transaction, insert_info)
         cnx.commit()
 
         #update user transaction
