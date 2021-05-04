@@ -513,6 +513,7 @@ def buy():
             transaction_id = x[0]
         transaction_id += 1
         #update transaction table
+        #update the stock schema in order to make this query work
         today = datetime.date.today()
         insert_info = (transaction_id,int(number),today,stock_price)
         cursor.execute(insert_transaction,insert_info)
