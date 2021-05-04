@@ -412,7 +412,30 @@ def stock_name():
 @app.route("/stock", methods = ["GET", "POST"])
 def stock():
     cursor = cnx.cursor()
-    return "hello"
+    if(request.method == 'POST'):
+      #if a user clicks on buy button,record his response
+        userDetails = request.form
+        stock_id = userDetails["stock_id"]
+        number = userDetails["number"]
+        data = (int(stock_id),)
+
+        #get stock price for the stock user want to view
+        cursor.execute(get_stock, data)
+        stock_price = 0
+        stock_share = 0
+        stock_name = ""
+        for name,price,share in cursor:
+            #print(price)
+            stock_name = name
+            stock_price = price
+            stock_share = share
+        #if there is no stock price (UNSURE IF THIS IS NEEDED FOR DISPLAYING ALL STOCKS. NO, RIGHT?)
+        if(stock_price == 0):
+            return "Invalid stock ID. Please Go back and try again"
+
+        stock_info = [stock_name, stock_price, stock_share]
+        
+        return render_template("display_stock.html", data = stock_info, navbar = ui.navbar(request))
 
 # Page to display the transaciton history
 @app.route("/transactions", methods = ["GET", "POST"])
