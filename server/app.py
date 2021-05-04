@@ -536,7 +536,7 @@ def sell():
           stock_name = name
           stock_price = price
           stock_share = share
-        #if the stock price is 0  
+        #if the stock price is 0
         if (stock_price == 0):
           return "Invalid stock ID. Please go back and try again"
 
@@ -554,17 +554,17 @@ def sell():
         update_info = (stock_share, stock_id)
         cursor.execute(update_stock_share, update_info)
         cnx.commit()
-      
+
         #update Watchlist
         get_info = (0, stock_id)
         cursor.execute(get_watchlist, get_info)
         check = -1
-        for id in cursor
+        for id in cursor:
           check = id
-        if (check == -1)
+        if (check == -1):
           cursor.execute(insert_watchlist, get_info)
           cnx.commmit()
-  
+
         #Update Transaction
         cursor.execute(get_transaction_number)
         transaction_id = 0
@@ -573,7 +573,7 @@ def sell():
 
         #Update transaction table
         insert_info = (transaction_id, int(number), 0, stock_price)
-        cursor.execute(insert_transactionm insert_info)
+        cursor.execute(insert_transaction, insert_info)
         cnx.commit()
 
         #update user transaction
@@ -583,9 +583,9 @@ def sell():
 
         #print confirmationt able into /tempates/confirmation.html
         confirmation_info = [number, stock_id, stock_name, sold, remaining];
-    
-        return (render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar(request))
-        
+
+        return (render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar(request)))
+
     #initialize the sell page
     stock_info = []
 
@@ -628,12 +628,12 @@ def transaction_history(group_id):
 def user_info(user_id):
     cursor = cnx.cursor()
     user_query = """
-                 SELECT s.stock_id, s.name, s.price, us.amount 
+                 SELECT s.stock_id, s.name, s.price, us.amount
                  FROM User u
                  JOIN User_Stock us
                  ON u.user_id = us.user_id
                  JOIN Stock s
-                 ON us.stock_id = s.stock_id 
+                 ON us.stock_id = s.stock_id
                  WHERE u.user_id = %s;
                  """
     cursor.execute(user_query, user_id)
