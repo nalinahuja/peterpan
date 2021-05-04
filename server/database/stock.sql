@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS `Transaction` (
   -- Attributes
   `transaction_id` int(11) NOT NULL,
   `amount` int(11) NOT NULL,
-  `date`  int(11) NOT NULL,
+  `date`  varchar(30) NOT NULL,
   `price` FLOAT NOT NULL,
 
   -- Keys
