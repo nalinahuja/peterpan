@@ -21,7 +21,7 @@ MAXIMUM_PRICE_CHANGE = 20
 
 # Transaction Constants
 BUY, SELL = 1, 0
-
+curr_user_id = 0
 # Server Constants----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Load Database Configuration
@@ -40,7 +40,7 @@ get_stock_by_stock_name = "SELECT stock_id,price,share FROM Stock Where name = %
 get_stock_by_stock_id = "SELECT name,price,share FROM Stock Where stock_id = %s;"
 get_user_balance = "SELECT balance FROM User Where user_id = %s;"
 get_watchlist = "SELECT stock_id FROM Watchlist Where user_id = %s AND stock_id = %s;"
-get_transaction_number = "SELECT COUNT(*) FROM User_Transaction"
+get_transaction_number = "SELECT COUNT(*) FROM Transaction"
 get_amount_bought = "SELECT SUM(t.amount) FROM Transaction t, User_Transaction ut WHERE t.transaction_id = ut.transaction_id AND ut.type = 1 AND stock_id = %s AND user_id = %s;"
 get_amount_sold =  "SELECT SUM(t.amount) FROM Transaction t, User_Transaction ut WHERE t.transaction_id = ut.transaction_id AND ut.type = 0 AND stock_id = %s AND user_id = %s;"
 get_transactions = """
@@ -57,6 +57,9 @@ update_user_balance = "UPDATE User SET balance = %s WHERE user_id = %s;"
 insert_user_transaction = "INSERT INTO User_Transaction (transaction_id,type,user_id,stock_id) VALUES (%s,%s,%s,%s);"
 insert_transaction = "INSERT INTO Transaction (transaction_id,amount,date,price) VALUES (%s,%s,%s,%s);"
 insert_watchlist = "INSERT INTO Watchlist (user_id,stock_id) VALUES (%s, %s);"
+repeatable_read = "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;"
+transaction_start = "START TRANSACTION;"
+transaction_commit = "COMMIT;"
 
 # End SQL Queries-----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -291,7 +294,8 @@ def login():
         if (obj is None):
             # Update View
             return (render_template('login.html', navbar = ui.navbar(request), error = True))
-
+        global curr_user_id
+        curr_user_id = input_user_id
         # Create Response
         response = make_response(redirect('/users/{}'.format(obj.user_id)))
 
@@ -346,7 +350,8 @@ def register():
 
         # Get User Object Using ORM
         obj = User.query.filter_by(user_id = input_user_id, password = input_password).first()
-
+        global curr_user_id
+        curr_user_id = input_user_id
         # Verify Return From Database
         if (obj is None):
             # Update View
@@ -376,11 +381,76 @@ def search(search_info):
     cursor.close()
     return render_template("search.html",data = data, navbar = ui.navbar(request))
 
+@app.route("/watchlist/<user_id>", methods=['GET', 'POST'])
+def add_to_watchlist():
+    cursor = cnx.cursor()
+    if(request.method == 'POST'):
+        userDetails = request.form
+        stock_id = userDetails["stock_id"]
+        number = userDetails["number"]
+        data = (int(stock_id),)
+
+        userid = user_id
+
+        cursor.execute(insert_watchlist, userid, stock_id)
+        cnx.commit()
+    cursor.close()
+
 @app.route("/stock/<name>", methods = ["GET", "POST"])
+def stock_name():
+    cursor = cnx.cursor()
+    if(request.method == 'POST'):
+      #if a user clicks on buy button,record his response
+        userDetails = request.form
+        stock_id = userDetails["stock_id"]
+        number = userDetails["number"]
+        data = (int(stock_id),)
+
+        #get stock price for the stock user want to view
+        cursor.execute(get_stock_by_stock_id,data)
+        stock_price = 0
+        stock_share = 0
+        stock_name = ""
+        for name,price,share in cursor:
+            #print(price)
+            stock_name = name
+            stock_price = price
+            stock_share = share
+        #if there is no stock price
+        if(stock_price == 0):
+            return "Invalid stock ID. Please Go back and try again"
+
+        stock_info = [stock_name, stock_price, stock_share]
+
+        return render_template("display_stock.html", data = stock_info, navbar = ui.navbar(request))
+
 @app.route("/stock", methods = ["GET", "POST"])
 def stock():
-    # todo, list top 10 stocks, all stocks
-    return "hello"
+    cursor = cnx.cursor()
+    if(request.method == 'POST'):
+      #if a user clicks on buy button,record his response
+        userDetails = request.form
+        stock_id = userDetails["stock_id"]
+        number = userDetails["number"]
+        data = (int(stock_id),)
+
+        #get stock price for the stock user want to view
+        cursor.execute(get_stock, data)
+        stock_price = 0
+        stock_share = 0
+        stock_name = ""
+        for name,price,share in cursor:
+            #print(price)
+            stock_name = name
+            stock_price = price
+            stock_share = share
+        #if there is no stock price (UNSURE IF THIS IS NEEDED FOR DISPLAYING ALL STOCKS. NO, RIGHT?)
+        if(stock_price == 0):
+            return "Invalid stock ID. Please Go back and try again"
+
+        stock_info = [stock_name, stock_price, stock_share]
+
+        return render_template("display_stock.html", data = stock_info, navbar = ui.navbar(request))
 
 # Page to display the transaciton history
 @app.route("/transactions", methods = ["GET", "POST"])
@@ -416,14 +486,15 @@ def transaction():
 def buy():
     # Create Database Cursor
     cursor = cnx.cursor()
-
+    db.engine.execute(repeatable_read)
+    db.engine.execute(transaction_start)
     if(request.method == 'POST'):
         #if a user clicks on buy button,record his response
         userDetails = request.form
         stock_id = userDetails["stock_id"]
         number = userDetails["number"]
         data = (int(stock_id),)
-
+        global curr_user_id
         #get stock price for the stock user want to buy
         cursor.execute(get_stock_by_stock_id,data)
         stock_price = 0
@@ -439,8 +510,7 @@ def buy():
             return "Invalid stock ID. Please Go back and try again"
 
         #get user balance
-        #TODO in the cur_info below, we should input the current user_id instead of 0
-        cur_info = (0,)
+        cur_info = (curr_user_id,)
         cursor.execute(get_user_balance,cur_info)
         balance = -5
         for user_balance in cursor:
@@ -458,14 +528,12 @@ def buy():
         cnx.commit()
 
         #update user_balance
-        #TODO update the current user_id here
-        update_info = (remaining,0)
+        update_info = (remaining,curr_user_id)
         cursor.execute(update_user_balance,update_info)
         cnx.commit()
 
         #update Watchlist
-        #TODO put current user_id instead of 0
-        get_info = (0,stock_id)
+        get_info = (curr_user_id,stock_id)
         cursor.execute(get_watchlist,get_info)
         check = -1
         for id in cursor:
@@ -481,23 +549,24 @@ def buy():
         transaction_id = 0
         for x in cursor:
             transaction_id = x[0]
-
+        transaction_id += 1
         #update transaction table
-        insert_info = (transaction_id,int(number),0,stock_price)
+        #update the stock schema in order to make this query work
+        today = datetime.date.today()
+        insert_info = (transaction_id,int(number),today,stock_price)
         cursor.execute(insert_transaction,insert_info)
         cnx.commit()
 
 
         #update user_transaction
-        #TODO update into current user_id below
-        insert_info = (transaction_id,1,0,stock_id)
+        insert_info = (transaction_id,1,curr_user_id,stock_id)
         cursor.execute(insert_user_transaction,insert_info)
         cnx.commit()
 
         #print confirmation table into /templates/confirmation.html
-        confirmation_info = [number,stock_id,stock_name,spent,remaining];
+        confirmation_info = [number,stock_id,stock_name,spent,remaining]
 
-
+        db.engine.execute(transaction_commit)
         return render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar(request))
 
 
@@ -514,12 +583,13 @@ def buy():
     cursor.close()
     #copy all of the code inside buy_template.html into buy.html
     #cursor.close()
+    db.engine.execute(transaction_commit)
     return render_template("buy.html", data = stock_info, navbar = ui.navbar(request))
 
 @app.route('/sell', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
 def sell():
-    cursor = cnx.cursor();
+    cursor = cnx.cursor()
     if (request.method == 'POST'):
         #if the user clicks on any button, record his response
         userDetails = request.form
@@ -582,9 +652,9 @@ def sell():
         cnx.commit()
 
         #print confirmationt able into /tempates/confirmation.html
-        confirmation_info = [number, stock_id, stock_name, sold, remaining];
+        confirmation_info = [number, stock_id, stock_name, sold, remaining]
 
-        return (render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar(request)))
+        return render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar(request))
 
     #initialize the sell page
     stock_info = []
