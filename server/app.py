@@ -381,6 +381,21 @@ def search(search_info):
     cursor.close()
     return render_template("search.html",data = data, navbar = ui.navbar(request))
 
+@app.route("/watchlist/<user_id>", methods=['GET', 'POST'])
+def add_to_watchlist():
+    cursor = cnx.cursor()
+    if(request.method == 'POST'):
+        userDetails = request.form
+        stock_id = userDetails["stock_id"]
+        number = userDetails["number"]
+        data = (int(stock_id),)
+
+        userid = user_id
+
+        cursor.execute(insert_watchlist, userid, stock_id)
+        cnx.commit()
+    cursor.close()
+
 @app.route("/stock/<name>", methods = ["GET", "POST"])
 def stock_name():
     cursor = cnx.cursor()
