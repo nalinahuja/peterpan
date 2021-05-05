@@ -24,6 +24,16 @@ ElSE
     INSERT INTO User_Stock (user_id, stock_id, amount)
     VALUES (new.user_id, new.stock_id, @amount)
     ON DUPLICATE KEY UPDATE amount = (amount - @amount);
+
+    SET @new_amount = (SELECT amount
+                       FROM User_Stock
+                       WHERE stock_id = new.stock_id AND user_id = new.user_id);
+
+    IF @new_amount = 0
+    THEN
+      DELETE FROM User_Stock
+      WHERE stock_id = new.stock_id AND user_id = new.user_id;
+    END IF;
 END IF;
 
 END //
@@ -55,6 +65,16 @@ BEGIN
         INSERT INTO Group_Stock (group_id, stock_id, amount)
         VALUES(new.group_id, new.stock_id, @amount)
         ON DUPLICATE KEY UPDATE amount = (amount - @amount);
+
+        SET @new_amount = (SELECT amount
+                           FROM Group_Stock
+                           WHERE stock_id = new.stock_id AND group_id = new.group_id);
+
+        IF @new_amount = 0
+        THEN
+          DELETE FROM Group_Stock
+          WHERE stock_id = new.stock_id AND group_id = new.group_id;
+        END IF;
     END IF;
 
 END //
