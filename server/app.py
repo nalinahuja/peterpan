@@ -76,6 +76,12 @@ get_user_balance = """
                    WHERE user_id = %s;
                    """
 
+get_group_balance = """
+                   SELECT balance
+                   FROM Group
+                   WHERE group_id = %s;
+                   """
+
 get_watchlist = """
                 SELECT stock_id
                 FROM Watchlist
@@ -126,6 +132,12 @@ update_user_balance = """
                       UPDATE User
                       SET balance = %s
                       WHERE user_id = %s;
+                      """
+
+update_group_balance = """
+                      UPDATE Group
+                      SET balance = %s
+                      WHERE group_id = %s;
                       """
 
 insert_user_transaction = """
@@ -1062,6 +1074,133 @@ def group_portfolio(group_id):
 
     # Return Response To Caller
     return (render_template("portfolio.html", group_id = group_id, balance = balance, stocks_owned = stocks_owned, stock_data = stock_info, navbar = ui.navbar(request)))
+
+@app.route('/group_buy/<group_id>', methods = ["GET", "POST"])
+@jwt_required(locations = ['cookies'])
+def group_buy(group_id):
+    # Get Current User ID
+    #user_id = get_jwt_identity()
+
+    # Open Database Cursor
+    cursor = cnx.cursor()
+
+    # Detect For Post Method
+    if (request.method == "POST"):
+        # Get User Data From Form
+        db.engine.execute(repeatable_read)
+        db.engine.execute(transaction_start)
+        groupDetails = request.form
+        stock_id = groupDetails["stock_id"]
+        stock_number = groupDetails["number"]
+        data = (int(stock_id),)
+
+        # Get Stock Price
+        cursor.execute(get_stock_by_stock_id, data)
+
+        # Initialize Stock Data
+        stock_price = None
+        stock_share = None
+        stock_name = ""
+
+        # Fetch Data From Cursor
+        for name, price, share in (cursor):
+            stock_name = name
+            stock_price = price
+            stock_share = share
+
+            # Verify Stock ID
+            if(not(stock_price)):
+                return (render_template("error.html", navbar = ui.navbar(request), msg = "Invalid stock ID. Please Go back and try again!"))
+
+        # Get User Balance
+        cur_info = (group_id,)
+        # Execute Query
+        cursor.execute(get_group_balance, cur_info)
+
+        # Initalize User Balance
+        balance = None
+
+        # Fetch User Data From Cursor
+        for group_balance in (cursor):
+            balance = group_balance[0]
+
+        # Calculate Spent Money
+        spent = stock_price * int(stock_number)
+
+        # Calculate Remaining Funds
+        remaining_funds = balance - spent
+
+        # Verify Remaining Funds
+        if(remaining_funds < 0):
+            return (render_template("error.html", navbar = ui.navbar(request), msg = "Not Enough Balance!"))
+
+        # Decrease Stock Share After Purchase
+        stock_share = stock_share - int(stock_number)
+        update_info = (stock_share,stock_id)
+        cursor.execute(update_stock_share,update_info)
+        cnx.commit()
+
+        # Update User Balance
+        update_info = (remaining_funds,group_id)
+        cursor.execute(update_group_balance,update_info)
+        cnx.commit()
+
+        # Get Transaction Number
+        cursor.execute(get_transaction_number)
+
+        # Initialize Transaction ID
+        transaction_id = 0
+
+        # Fetch Data From Cursor
+        for x in cursor:
+            transaction_id = x[0]
+
+        # Increment Transaction ID
+        transaction_id += 1
+
+        # Update The Transaction Table
+        today = datetime.date.today()
+        nt = Transaction(transaction_id = transaction_id,amount = int(stock_number),date = today,price = stock_price)
+        db.session.add(nt)
+        db.session.commit()
+
+        # Query To Insert User Transaction
+        query = """
+                INSERT INTO Group_Transaction (transaction_id, type, group_id, stock_id)
+                VALUES ({}, {}, {}, {});
+                """
+
+        # Execute Query
+        cursor.execute(query.format(transaction_id, BUY, group_id, stock_id))
+
+        # Commit Data To Database
+        cnx.commit()
+
+        # Format Confirmation Data
+        confirmation_info = [stock_number,stock_id,stock_name,spent,remaining_funds]
+
+        # Commit Data To Database
+        db.engine.execute(transaction_commit)
+
+        # Return Response To user
+        return (render_template("confirmation_buy.html", data = confirmation_info, navbar = ui.navbar(request)))
+    else:
+        # Initialize Stock Data List
+        stock_info = []
+
+        # Execute Query To Get All Stock
+        cursor.execute(get_stock)
+
+        # Fetch Stock Data From Cursor
+        for stock_id, name, price, share in (cursor):
+            stock_info.append((stock_id,name,price,share))
+
+        # Close Cursor
+        cursor.close()
+
+        # Return Response To User
+        return (render_template("buy.html", data = stock_info, navbar = ui.navbar(request)))
+
 # End Navbar Functions--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 @app.route('/watchlist', methods = ["GET", "POST"])
