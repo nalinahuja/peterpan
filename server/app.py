@@ -153,12 +153,15 @@ transaction_commit = "COMMIT;"
 # Create Flask Application
 app = Flask(__name__)
 
-# Configure Flask Application
+# Configure Flask Key
 app.config['SECRET_KEY'] = '537e3275e714ff299e49'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Configure JWT Authentication
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days = 10)
+
+# Configure ORM Database
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:' + dbconf['mysql_password'] + '@localhost/' + dbconf['mysql_db']
-app.config.setdefault('JWT_ACCESS_COOKIE_NAME', 'access_token_cookie')
 
 # End Server Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -167,36 +170,15 @@ db = SQLAlchemy(app)
 
 # Verify SQL_ALCHEMY_DB
 if (db is None):
-    raise ValueError("db is None")
+    raise ValueError("Could not initialize ORM: db is None")
 
 # Set ORM Database Reference
 globl.SQL_ALCHEMY_DB = db
 
-# Import ORM Module
-import orm
-
-# Import Tables From ORM
-from orm import User
-from orm import Stock
-from orm import Stock_Update
+# Import All Tables From ORM Module
+from orm import *
 
 # End ORM Initialization----------------------------------------------------------------------------------------------------------------------------------------------------
-
-def change_stock_tables():
-    # update_stock_every_5_minutes()
-    pass
-
-#update the stock every 5 minutes in background
-#!!!IMPORTANT
-#Warning: This scheduler will run twice if debug mode is ON.
-#The Werkzeug reloader spawns a child process so that it can restart that process each time your code changes."
-#Werkzeug is the library that supplies Flask with the development server
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(change_stock_tables, 'interval', minutes = 1)
-scheduler.start()
-
-# End Server Jobs-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Set JWT Token Location
 JWT_TOKEN_LOCATION = ['cookies']
@@ -204,12 +186,109 @@ JWT_TOKEN_LOCATION = ['cookies']
 # Configure JWT Manager
 jwt = JWTManager(app)
 
+# Unauthorized Page Access Handler
 @jwt.unauthorized_loader
 def unauthorized(callback):
     return (render_template('401.html', navbar = ui.navbar(request)))
 
 # End Authentication Initialization------------------------------------------------------------------------------------------------------------------------------------------------------
 
+def search_function(search_word,cursor):
+    #check if the user
+    input_token = (search_word,)
+    result = []
+    stock_id = -1
+    stock_name = ""
+    stock_price = -1
+    stock_share = -1
+    if(search_word.isnumeric()):
+        #if the user inputs the stock id
+        cursor.execute(get_stock_by_stock_id,input_token)
+        for name,price,share in cursor:
+            stock_price = price
+            stock_share = share
+            stock_name = name
+        #stock exists
+        if(stock_price != -1):
+            result.append(search_word)
+            result.append(stock_name)
+            result.append(stock_price)
+            result.append(stock_share)
+            return result
+    else:
+        #if the user inputs the stock name
+        cursor.execute(get_stock_by_stock_name,input_token)
+        for id,price,share in cursor:
+            stock_id = id
+            stock_share = share
+            stock_price = price
+        #stock exists
+        if(stock_id != -1):
+            result.append(stock_id)
+            result.append(search_word)
+            result.append(stock_price)
+            result.append(stock_share)
+            return result
+    return -1
+
+def update_stock_every_5_minutes():
+    cursor = cnx.cursor()
+    print ("update started")
+    #get maximum number of update id
+    cursor.execute(get_max_update_id)
+    max_update_id = 0
+    for cur in cursor:
+        max_update_id = cur
+    max_update_id = max_update_id[0]
+    max_update_id += 1
+
+    #get total number of stocks in stock table
+    cursor.execute(get_number_of_stock)
+    num_of_stock = 0
+    for cur in cursor:
+        num_of_stock = cur
+    num_of_stock = num_of_stock[0]
+
+    #loop through all of the stocks
+    for i in range(num_of_stock):
+        #generate a random number for price change
+        id = int(random.randint(0, 1))
+        delta = float(random.random() * MAXIMUM_PRICE_CHANGE) * (-1 if (id == 0) else 1)
+
+        #get stock information
+        input_token = (i,)
+        cursor.execute(get_stock_by_stock_id,input_token)
+        stock_name = ""
+        stock_price,stock_share = 0,0
+        for name,price,share in cursor:
+            stock_name,stock_price,stock_share  = name,price,share
+        new_price = stock_price + delta
+        #if the new price is negative or zero, then just do nothing
+        if(new_price <= 0) : continue
+
+        #update the stock price using ORM
+        stock_spec = Stock.query.filter_by(stock_id=i).first()
+        stock_spec.price = new_price
+        db.session.commit()
+        new_update = Stock_Update(update_id=max_update_id, stock_id = i, price_change = delta)
+        db.session.add(new_update)
+        db.session.commit()
+        #update the stock change using ORM
+    print("update ended")
+    cursor.close()
+
+# Initialize Background Scheduler
+scheduler = BackgroundScheduler()
+
+# Create New Job
+scheduler.add_job(update_stock_every_5_minutes, 'interval', minutes = 5)
+
+# Start Scheduler
+scheduler.start()
+
+# End Internal Functions----------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Page Not Found Handler
 @app.errorhandler(404)
 def page_not_found(e):
     # Return 404 page
@@ -217,31 +296,11 @@ def page_not_found(e):
 
 @app.route("/", methods=['GET', 'POST'])
 def home():
-    if (request.method == 'POST'):
-        # Fetch user's input data
-        user_data = request.form
-        #if a user clicks on buy stock
-        if user_data.get("search"):
-            search_info = user_data["search_info"]
-            url = '/search/' + search_info
-            return redirect(url)
-        if user_data.get("buy"):
-            return redirect('/buy')
-        #if a user clicks on sell stock
-        if user_data.get("sell"):
-            return redirect('/sell')
-        #if a user wants to register
-        if user_data.get("register"):
-            return redirect('/register')
-        #if a user wants to view the transaction
-        if (user_data.get("transactions")):
-            return (redirect("/transactions"))
-
-    # Stock Data
-    num_stocks = num_shares = 0
-
     # Open Database Cursor
     cursor = cnx.cursor()
+
+    # Initialize Stock Data
+    num_stocks = num_shares = 0
 
     # Query To Fetch Number Of Stocks In Market
     query = """
@@ -252,11 +311,11 @@ def home():
     # Execute Query
     cursor.execute(query)
 
-    # Fetch Data
+    # Fetch Data From Cursor
     for result in (cursor):
         num_stocks = int(result[0])
 
-    # Query To Fetch Number Of Stocks In Market
+    # Query To Fetch Number Of Shares In Market
     query = """
             SELECT SUM(share) AS result
             FROM Stock;
@@ -265,14 +324,14 @@ def home():
     # Execute Query
     cursor.execute(query)
 
-    # Fetch Data
+    # Fetch Data From Cursor
     for result in (cursor):
         num_shares = int(result[0])
 
-    # Stock Market Data
+    # Initialize Stock Market Data
     transaction_cnt = avg_buy_price = avg_sell_price = None
 
-    # Query To Fetch Number Of Transactions In 24hr
+    # Query To Fetch Number Of Transactions In Last 24hr
     query = """
             SELECT COUNT(*) AS result
             FROM Transaction
@@ -282,7 +341,7 @@ def home():
     # Execute Query
     cursor.execute(query)
 
-    # Fetch Data
+    # Fetch Data From Cursor
     for result in (cursor):
         transaction_cnt = int(result[0])
 
@@ -818,92 +877,7 @@ def watchlist(user_id):
 
     return render_template("watchlist.html", data = watch_info, navbar = ui.navbar(request))
 
-# End Router Functions----------------------------------------------------------------------------------------------------------------------------------------------------
-
-def search_function(search_word,cursor):
-    #check if the user
-    input_token = (search_word,)
-    result = []
-    stock_id = -1
-    stock_name = ""
-    stock_price = -1
-    stock_share = -1
-    if(search_word.isnumeric()):
-        #if the user inputs the stock id
-        cursor.execute(get_stock_by_stock_id,input_token)
-        for name,price,share in cursor:
-            stock_price = price
-            stock_share = share
-            stock_name = name
-        #stock exists
-        if(stock_price != -1):
-            result.append(search_word)
-            result.append(stock_name)
-            result.append(stock_price)
-            result.append(stock_share)
-            return result
-    else:
-        #if the user inputs the stock name
-        cursor.execute(get_stock_by_stock_name,input_token)
-        for id,price,share in cursor:
-            stock_id = id
-            stock_share = share
-            stock_price = price
-        #stock exists
-        if(stock_id != -1):
-            result.append(stock_id)
-            result.append(search_word)
-            result.append(stock_price)
-            result.append(stock_share)
-            return result
-    return -1
-
-# #changed the stock price every 5 minutes and add the record into stock_update
-def update_stock_every_5_minutes():
-    cursor = cnx.cursor()
-    print ("update started")
-    #get maximum number of update id
-    cursor.execute(get_max_update_id)
-    max_update_id = 0
-    for cur in cursor:
-        max_update_id = cur
-    max_update_id = max_update_id[0]
-    max_update_id += 1
-
-    #get total number of stocks in stock table
-    cursor.execute(get_number_of_stock)
-    num_of_stock = 0
-    for cur in cursor:
-        num_of_stock = cur
-    num_of_stock = num_of_stock[0]
-
-    #loop through all of the stocks
-    for i in range(num_of_stock):
-        #generate a random number for price change
-        id = int(random.randint(0, 1))
-        delta = float(random.random() * MAXIMUM_PRICE_CHANGE) * (-1 if (id == 0) else 1)
-
-        #get stock information
-        input_token = (i,)
-        cursor.execute(get_stock_by_stock_id,input_token)
-        stock_name = ""
-        stock_price,stock_share = 0,0
-        for name,price,share in cursor:
-            stock_name,stock_price,stock_share  = name,price,share
-        new_price = stock_price + delta
-        #if the new price is negative or zero, then just do nothing
-        if(new_price <= 0) : continue
-
-        #update the stock price using ORM
-        stock_spec = Stock.query.filter_by(stock_id=i).first()
-        stock_spec.price = new_price
-        db.session.commit()
-        new_update = Stock_Update(update_id=max_update_id, stock_id = i, price_change = delta)
-        db.session.add(new_update)
-        db.session.commit()
-        #update the stock change using ORM
-    print("update ended")
-    cursor.close()
+# End External Functions----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Start Server
 if __name__ == "__main__":
