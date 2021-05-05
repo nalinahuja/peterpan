@@ -26,46 +26,28 @@
         <br>
         <h1>Group Transactions</h1>
         <div>
-          {% for stock_id, stock_name, transaction_type, amount, price, total_cost, date in data %}
-            <table border = '1'>
+          <table border = '3' style="width:60%">
             <tr>
-            <td>Stock ID</td>
-            <td>{{stock_id}}</td>
+              <th>Stock ID</th>
+              <th>Stock Name</th>
+              <th>Transaction Type</th>
+              <th># of Stocks</th>
+              <th>Price</th>
+              <th>Total Money Spent</th>
+              <th>Date</th>
             </tr>
-
+            {% for stock_id, stock_name, transaction_type, amount, price, total_cost, date in data %}
             <tr>
-            <td>Stock Name</td>
-            <td>{{stock_name}}</td>
+              <th>{{stock_id}}</th>
+              <th>{{stock_name}}</th>
+              <th>{{transaction_type}}</th>
+              <th>{{amount}}</th>
+              <th>{{price}}</th>
+              <th>{{total_cost}}</th>
+              <th>{{date}}</th>
             </tr>
-
-            <tr>
-            <td>Transaction Type</td>
-            <td>{{transaction_type}}</td>
-            </tr>
-            
-            <tr>
-            <td>Number of stocks</td>
-            <td>{{amount}}</td>
-            </tr>
-
-            <tr>
-            <td>Price</td>
-            <td>{{price}}</td>
-            </tr>
-
-            <tr>
-            <td>Total Money Spent</td>
-            <td>{{total_cost}}</td>
-            </tr>
-            
-            <tr>
-            <td>Date</td>
-            <td>{{date}}</td>
-            </tr>
-            </table>
-            <br>
-
-          {% endfor %}
+            {% endfor %}
+          </table>
         </div>
       </div>
     </div>

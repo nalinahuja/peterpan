@@ -99,7 +99,7 @@ get_amount_sold =  """
                    """
 
 get_transactions = """
-                   SELECT U.stock_id, S.name, T.amount, U.type AS transaction_type, T.price
+                   SELECT U.stock_id, S.name, T.amount, U.type AS transaction_type, T.price, T.date
                    FROM User_Transaction AS U JOIN Transaction AS T ON U.transaction_id = T.transaction_id
                    JOIN Stock AS S ON U.stock_id = S.stock_id
                    WHERE U.user_id = {};
