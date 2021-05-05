@@ -798,6 +798,37 @@ def portfolio():
 
 # End Navbar Functions--------------------------------------------------------------------------------------------------------------------------------------------------------
 
+@app.route('/watchlist', methods = ["GET", "POST"])
+@jwt_required(locations = ['cookies'])
+def watchlist():
+    # Get Current User ID
+    user_id = get_jwt_identity()
+
+    # Open Database Cursor
+    cursor = cnx.cursor()
+
+    # Query To Get Watchlist Items
+    watchlist_query = """
+                        SELECT s.stock_id, s.name, s.price, s.share
+                        FROM Watchlist w
+                        JOIN Stock s
+                        ON w.stock_id = s.stock_id
+                        WHERE w.user_id = {};
+                        """
+
+    # Execute Query
+    cursor.execute(watchlist_query.format(user_id))
+
+    # Initialize Data List
+    watch_info = []
+
+    # Fetch Data From Cursor
+    for stock_id, stock_name, stock_price, stock_shares in cursor:
+        watch_info.append((stock_id, stock_name, stock_price, stock_shares))
+
+    # Return Response To User
+    return (render_template("watchlist.html", data = watch_info, navbar = ui.navbar(request)))
+
 @app.route("/user_transactions", methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
 def transaction():
@@ -849,33 +880,6 @@ def transaction_history(group_id):
         total_cost = amount * price
         group_transaction.append((stock_id, stock_name, transaction_type, amount, price, total_cost, date))
     return render_template("group_transactions.html", data = group_transaction, navbar = ui.navbar(request))
-
-@app.route('/watchlist', methods = ["GET", "POST"])
-@jwt_required(locations = ['cookies'])
-def watchlist():
-    # Get Current User ID
-    user_id = get_jwt_identity()
-
-    # Open Database Cursor
-    cursor = cnx.cursor()
-
-    # Query To Get Watchlist Items
-    watchlist_query = """
-                        SELECT s.stock_id, s.name, s.price, s.share
-                        FROM Watchlist w
-                        JOIN Stock s
-                        ON w.stock_id = s.stock_id
-                        WHERE w.user_id = {};
-                        """
-
-    # Execute Query
-    cursor.execute(watchlist_query.format(user_id))
-
-    watch_info = list()
-    for stock_id, stock_name, stock_price, stock_shares in cursor:
-        watch_info.append((stock_id, stock_name, stock_price, stock_shares))
-
-    return (render_template("watchlist.html", data = watch_info, navbar = ui.navbar(request)))
 
 # End External Functions----------------------------------------------------------------------------------------------------------------------------------------------------
 
