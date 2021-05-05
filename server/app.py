@@ -365,15 +365,11 @@ def index():
     avg_buy_price = "{:.2f}".format(sum(t[1] for t in cursor if (t[0] == BUY)))
     avg_sell_price = "{:.2f}".format(sum(t[1] for t in cursor if (t[0] == SELL)))
 
-    # Get Newest Historical Stock Prices
+    # Get Oldest Historical Stock Prices
     query = """
-            SELECT stock_id, price_change AS avg_price
-            FROM Stock_Update WHERE update_id = 0
-            GROUP BY stock_id
-            UNION
-            SELECT stock_id, price_change AS avg_price
-            FROM Stock_Update WHERE update_id = (SELECT COUNT(*) - 1 FROM Stock_Update)
-            GROUP BY stock_id;
+            SELECT stock_id, price_change
+            FROM Stock_Update
+            WHERE update_id = 0
             """
 
     # Execute Query
@@ -384,12 +380,21 @@ def index():
 
     # Extract Data From Cursor
     for result in (cursor):
-        # Calculate Average Stock Price
-        if (not(result[0] in stocks)):
-            stocks[result[0]] = result[1]
-        else:
-            stocks[result[0]] += result[1]
-            stocks[result[0]] /= 2
+        stocks[int(result[0])] = float(result[1])
+
+    # Get Newest Historical Stock Prices
+    query = """
+            SELECT stock_id, price_change
+            FROM Stock_Update
+            WHERE update_id = (SELECT MAX(update_id) FROM Stock_Update)
+            """
+
+    # Execute Query
+    cursor.execute(query)
+
+    # Calculate Average Price
+    for result in (cursor):
+        stocks[int(result[0])] = ((stocks[int(result[0])] + float(result[1])) / 2)
 
     # Get Top Two Stocks Ranked By Decreasing Historical Average Price
     stock_rank = sorted(stocks.items(), key = lambda x : x[1], reverse = True)[:2]
