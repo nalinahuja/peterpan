@@ -44,7 +44,7 @@
         <h1>Group Actions</h1>
         <br>
         <a href="/join_group"><button type="button" class="btn btn-danger">Join Group</button></a>
-        <a href="/group_transactions"><button type="button" class="btn btn-danger">Group</button></a>
+        <a href="{{ url_for('group_portfolio', group_id='{{ group_id }}') }}"><button type="button" class="btn btn-danger">User's Group</button></a>
         <hr style="width:95%;">
     </div>
     </center>

@@ -1003,8 +1003,25 @@ def portfolio():
         if (result[0]):
             stocks_owned = int(result[0])
 
+    # Get user's group_id
+    group_query = """
+                  SELECT group_id
+                  FROM User u
+                  JOIN Group_Users gu
+                  ON u.user_id = gu.user_id
+                  WHERE u.user_id = {};
+                  """
+    cursor.execute(group_query.format(user_id))
+    
+    group_id = None
+
+    # Get Data from Cursor
+    for result in cursor:
+        if (result[0]):
+            group_id = int(result[0])
+
     # Return Response To Caller
-    return (render_template("portfolio.html", user_id = user_id, balance = balance, stocks_owned = stocks_owned, stock_data = stock_info, navbar = ui.navbar(request)))
+    return (render_template("portfolio.html", user_id = user_id, group_id = group_id, balance = balance, stocks_owned = stocks_owned, stock_data = stock_info, navbar = ui.navbar(request)))
 
 @app.route('/group_portfolio/<group_id>')
 @jwt_required(locations = ['cookies'])
