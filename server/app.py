@@ -7,33 +7,44 @@ import random
 import datetime
 import mysql.connector
 
+from datetime import timedelta
 from collections import defaultdict
 from multiprocessing import Process
 from flask_sqlalchemy import SQLAlchemy
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, request, redirect, render_template, make_response
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, unset_access_cookies
+
+from flask import Flask
+from flask import request
+from flask import redirect
+from flask import render_template
+from flask import make_response
+
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+from flask_jwt_extended import set_access_cookies
+from flask_jwt_extended import unset_access_cookies
 
 # End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Transaction Constants
+BUY, SELL = 1, 0
 
 # Maximum Price Change
 MAXIMUM_PRICE_CHANGE = 20
 
-# Transaction Constants
-BUY, SELL = 1, 0
-curr_user_id = 0
 # Server Constants----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Load Database Configuration
 dbconf = yaml.load(open(os.environ["DATABASE_CONFIG"]), yaml.Loader)
 
 # Establish Database Connection
-cnx = mysql.connector.connect(user = dbconf['mysql_user'], password = dbconf['mysql_password'],
-                              host = dbconf['mysql_host'], database = dbconf['mysql_db'])
+cnx = mysql.connector.connect(user = dbconf['mysql_user'], password = dbconf['mysql_password'], host = dbconf['mysql_host'], database = dbconf['mysql_db'])
 
 # End Database Connector----------------------------------------------------------------------------------------------------------------------------------------------
 
-# Query for getting all current stock information
+# Queries For Database
 get_stock = "SELECT stock_id, name, price, share FROM Stock;"
 user_account_money = "SELECT balance FROM User Where user_id = %s;"
 get_stock_by_stock_name = "SELECT stock_id,price,share FROM Stock Where name = %s;"
@@ -69,6 +80,7 @@ app = Flask(__name__)
 # Configure Flask Application
 app.config['SECRET_KEY'] = '537e3275e714ff299e49'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days = 10)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:' + dbconf['mysql_password'] + '@localhost/' + dbconf['mysql_db']
 app.config.setdefault('JWT_ACCESS_COOKIE_NAME', 'access_token_cookie')
 
@@ -769,124 +781,6 @@ def search_function(search_word,cursor):
             result.append(stock_share)
             return result
     return -1
-
-def stock_table_job():
-    # Create Database Cursor
-    cursor = cnx.cursor()
-
-    # Query For Latest Stock Prices
-    latest_stock_prices = """
-                          SELECT stock_id, price
-                          FROM Stock;
-                          """
-
-    # Execute Query
-    cursor.execute(latest_stock_prices)
-
-    # Initialize Stock Dictionary
-    stock_prices = defaultdict(float)
-
-    # Get All Stock Prices
-    for stock_id, price in (cursor):
-        stock_prices[stock_id] = price
-
-    # Create New Stock History
-    for stock_id in sorted(stock_prices):
-        # Get Stock Price
-        new_price = stock_prices[stock_id]
-
-        # Get Increase Or Decrease Direction
-        id = int(random.randint(0, 1))
-
-        # Calculate Price Delta
-        delta = float(random.random() * MAXIMUM_PRICE_CHANGE) * (-1 if (id == 0) else 1)
-
-        if (new_price + delta > 10):
-            # Calculate New Price
-            new_price += delta
-
-        # Create Dynamic SQL Query
-        history_update_query = """
-                               UPDATE Stock
-                               SET price = {:.2f}
-                               WHERE stock_id = {}
-                               """
-        # Insert New Stock Tuple
-        cursor.execute(history_update_query.format(new_price, stock_id))
-
-        # Commit Data To Database
-        cnx.commit()
-
-    # Close Database Cursor
-    cursor.close()
-
-def stock_update_table_job():
-    # Create Database Cursor
-    cursor = cnx.cursor()
-
-    # Query For Latest Stock Prices
-    latest_stock_prices = """
-                          SELECT stock_id, price
-                          FROM Stock;
-                          """
-
-    # Execute Query
-    cursor.execute(latest_stock_prices)
-
-    # Initialize Latest Update Idenfitier
-    latest_update_id = None
-
-    # Query For Latest Stock Prices
-    latest_stock_update = """
-                          SELECT COUNT(*)
-                          FROM Stock_Update;
-                          """
-
-    # Execute Query
-    cursor.execute(latest_stock_update)
-
-    # Fetch Result From Cursor
-    for result in (latest_stock_update):
-        latest_update_id = int(latest_stock_update[0]) + 1
-
-    # Initialize Stock Dictionary
-    stock_prices = defaultdict(float)
-
-    # Get All Stock Prices
-    for stock_id, price in (cursor):
-        stock_prices[stock_id] = price
-
-    # Create New Stock History
-    for stock_id in sorted(stock_prices):
-        # Get Stock Price
-        new_price = stock_prices[stock_id]
-
-        # Get Increase Or Decrease Direction
-        id = int(random.randint(0, 1))
-
-        # Calculate Price Delta
-        delta = float(random.random() * MAXIMUM_PRICE_CHANGE) * (-1 if (id == 0) else 1)
-
-        if (new_price + delta > 10):
-            # Calculate New Price
-            new_price += delta
-
-        # Create Dynamic SQL Query
-        history_update_query = """
-                               INSERT INTO Stock_Update (update_id, stock_id, price_change)
-                               VALUES (%s, %s, %s);
-                               """
-        # Format History Tuple
-        history_data = (int(latest_update_id), int(stock_id), float(new_price))
-
-        # Insert New Stock Tuple
-        cursor.execute(history_update_query, history_data)
-
-        # Commit Data To Database
-        cnx.commit()
-
-    # Close Database Cursor
-    cursor.close()
 
 # #changed the stock price every 5 minutes and add the record into stock_update
 def update_stock_every_5_minutes():
