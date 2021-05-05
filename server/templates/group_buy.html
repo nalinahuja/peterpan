@@ -1,0 +1,47 @@
+<!-- This is a template for buy page-->
+<!DOCTYPE html>
+<html>
+
+<!-- Title of the page-->
+<head>
+<title>Buy Page</title>
+</head>
+
+{{ navbar | safe }}
+
+<br>
+<div style="margin-left: 1%;">
+  <h2>Buy Stocks</h2>
+<form method="POST" action="">
+  <!-- area that let user enter the stock_id they want to buy-->
+  <label for="stock_id">Stock ID:</label><br>
+  <input type="text" name = "stock_id" id="stock_id"><br>
+  <br>
+
+  <!-- area that let user enter the number of stocks they want to buy-->
+  <label for="number">Share Number:</label><br>
+  <input type="text" name = "number" id="number"><br>
+  <br>
+
+  <!--submit button-->
+  <input type="submit" name = "buy" value="Buy">
+</form>
+<br>
+<table border = '3' style="width:60%">
+  <tr>
+    <th>Stock ID</th>
+    <th>Stock Name</th>
+    <th>Price</th>
+    <th>Share</th>
+  </tr>
+  {% for stock_id,name,price,share in data %}
+  <tr>
+    <th>{{stock_id}}</th>
+    <th>{{name}}</th>
+    <th>{{price}}</th>
+    <th>{{share}}</th>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+</html>

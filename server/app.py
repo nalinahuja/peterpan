@@ -1048,6 +1048,7 @@ def join_group():
                       ON u.user_id = gu.user_id
                       WHERE u.user_id = {};
                       """
+
         cursor.execute(group_query.format(user_id))
 
         group_id = None
@@ -1059,18 +1060,35 @@ def join_group():
         if(group_id is not None):
             print(group_id)
             return (render_template("error.html", navbar = ui.navbar(request), msg = "you already belong to a group, be loyal!"))
-        group_id = input_group_id
-        #get user balance
-        input_token = (user_id,)
-        balance = 0
-        cursor.execute(get_user_balance,input_token)
-        for user_balance in cursor:
-            balance = int(user_balance[0])
+        else:
+            # Get Group From Database
+            group = Group_Info.query.filter_by(group_id = group_id).first()
 
-        #if balance is not enough
-        input_money = int(input_money)
-        if(balance < input_money):
-            return (render_template("error.html", navbar = ui.navbar(request), msg = "Not enough money"))
+            if (not(group)):
+                group_id = input_group_id
+                #get user balance
+                input_token = (user_id,)
+                balance = 0
+                cursor.execute(get_user_balance,input_token)
+                for user_balance in cursor:
+                    balance = int(user_balance[0])
+
+                #if balance is not enough
+                input_money = int(input_money)
+                if(balance < input_money):
+                    db.session.commit()
+                    return (render_template("error.html", navbar = ui.navbar(request), msg = "Not enough money"))
+
+                query = """
+                        INSERT INTO Group_Info (group_id, balance)
+                        VALUES ({}, {});
+                        """
+
+                cursor.execute(query.format(group_id, input_money))
+                cnx.commit()
+            else:
+                db.session.commit()
+                return (render_template("error.html", navbar = ui.navbar(request), msg = "this group already exists, please try another group_id!"))
 
         #update a group's balance using ORM
         input_token = (group_id,)
@@ -1078,8 +1096,10 @@ def join_group():
         cursor.execute(get_group_balance,input_token)
         for cur in cursor:
             group_balance = int(cur[0])
+
         #if the group_id does not exist
         if(group_balance is None):
+            db.session.commit()
             return (render_template("error.html", navbar = ui.navbar(request), msg = "Invalid group id"))
         group_balance += input_money
         spec_group = Group_Info.query.filter_by(group_id = group_id).first()
@@ -1096,9 +1116,11 @@ def join_group():
         new_group_member = Group_Users(group_id = group_id,user_id = user_id)
         db.session.add(new_group_member)
         db.session.commit()
+
         cursor.close()
         return render_template("group_join_success.html",navbar = ui.navbar(request))
     cursor.close()
+    db.session.commit()
     return render_template("group_join.html",navbar = ui.navbar(request))
 
 @app.route('/group_portfolio/<group_id>')
