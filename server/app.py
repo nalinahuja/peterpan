@@ -480,7 +480,6 @@ def register():
 
         # Initialize Cursor Input
         cursor_input = (input_user_id,)
-
         # Execute Query
         cursor.execute(get_user_balance, cursor_input)
 
@@ -616,12 +615,12 @@ def buy():
     cursor = cnx.cursor()
 
     # Initalize Isolation Level
-    db.engine.execute(repeatable_read)
-    db.engine.execute(transaction_start)
 
     # Detect For Post Method
     if (request.method == "POST"):
         # Get User Data From Form
+        db.engine.execute(repeatable_read)
+        db.engine.execute(transaction_start)
         userDetails = request.form
         stock_id = userDetails["stock_id"]
         stock_number = userDetails["number"]
@@ -647,7 +646,6 @@ def buy():
 
         # Get User Balance
         cur_info = (user_id,)
-
         # Execute Query
         cursor.execute(get_user_balance, cur_info)
 
@@ -694,14 +692,14 @@ def buy():
 
         # Update The Transaction Table
         today = datetime.date.today()
-        insert_info = (transaction_id,int(stock_number),today,stock_price)
-        cursor.execute(insert_transaction,insert_info)
-        cnx.commit()
+        nt = Transaction(transaction_id = transaction_id,amount = int(stock_number),date = today,price = stock_price)
+        db.session.add(nt)
+        db.session.commit()
 
         # Update User Transaction
-        insert_info = (transaction_id,1,user_id,stock_id)
-        cursor.execute(insert_user_transaction,insert_info)
-        cnx.commit()
+        nut = User_Transaction(transaction_id = transaction_id,type = 1,user_id = user_id,stock_id = stock_id)
+        db.session.add(nut)
+        db.session.commit()
 
         # Format Confirmation Data
         confirmation_info = [stock_number,stock_id,stock_name,spent,remaining_funds]
