@@ -709,7 +709,7 @@ def buy():
         db.session.commit()
 
         # Update User Transaction
-        nut = User_Transaction(transaction_id = transaction_id,type = 1,user_id = user_id,stock_id = stock_id)
+        nut = User_Transaction(transaction_id = transaction_id,type = BUY,user_id = user_id,stock_id = stock_id)
         db.session.add(nut)
         db.session.commit()
 
@@ -755,8 +755,8 @@ def sell():
 
         # Get User Details From POST Request
         userDetails = request.form
-        stock_id = userDetails["stock_id"]
-        sale_amount = userDetails["number"]
+        stock_id = int(userDetails["stock_id"])
+        sale_amount = int(userDetails["number"])
 
         # Query To Get User Stock By Stock ID
         query = """
@@ -769,20 +769,20 @@ def sell():
         cursor.execute(query.format(user_id, stock_id))
 
         # Initialize Stock Data
-        stock_name, stock_price, stock_shares = None
+        stock_name = stock_price = stock_shares = None
 
         # Fetch Data From Cursor
         for _, shares, name, price in (cursor):
-            stock_shares = shares
-            stock_price = price
-            stock_name = name
+            stock_shares = int(shares)
+            stock_price = float(price)
+            stock_name = str(name)
 
         # Verify Remaining Funds
         if (not(stock_name)):
             return (render_template("error.html", navbar = ui.navbar(request), msg = "You Don't Own That Stock!"))
 
         # Update Market Share Amount
-        stock_shares += sale_amount
+        stock_shares += int(sale_amount)
 
         # Increase Stock Shares After Purchase
         update_info = (stock_shares,stock_id)
@@ -804,7 +804,7 @@ def sell():
 
         # Fetch Data From Cursor
         for balance in (cursor):
-            user_balance = float(balance)
+            user_balance = float(balance[0])
 
         # Calculate Earnings
         earnings = stock_price * sale_amount
@@ -836,10 +836,17 @@ def sell():
         db.session.add(nt)
         db.session.commit()
 
-        # Update User Transaction
-        nut = User_Transaction(transaction_id = transaction_id,type = 0,user_id = user_id,stock_id = stock_id)
-        db.session.add(nut)
-        db.session.commit()
+        # Query To Insert User Transaction
+        query = """
+                INSERT INTO User_Transaction (transaction_id, type, user_id, stock_id)
+                VALUES ({}, {}, {}, {});
+                """
+
+        # Execute Query
+        query.execute(query.format(transaction_id, SELL, user_id, stock_id))
+
+        # Commit Data To Database
+        cnx.commit()
 
         # End Transaction
         db.engine.execute(transaction_commit)
