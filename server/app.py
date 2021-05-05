@@ -994,6 +994,74 @@ def portfolio():
     # Return Response To Caller
     return (render_template("portfolio.html", user_id = user_id, balance = balance, stocks_owned = stocks_owned, stock_data = stock_info, navbar = ui.navbar(request)))
 
+@app.route('/group_portfolio/<group_id>')
+@jwt_required(locations = ['cookies'])
+def group_portfolio(group_id):
+
+    # Create Cursor
+    cursor = cnx.cursor()
+
+    # Query To Get All User Information
+    group_query = """
+                 SELECT s.stock_id, s.name, s.price, us.amount
+                 FROM Group g
+                 JOIN Group_Stock gs
+                 ON g.group_id = gs.group_id
+                 JOIN Stock s
+                 ON gs.stock_id = s.stock_id
+                 WHERE g.group_id = {};
+                 """
+
+    # Execute Query
+    cursor.execute(group_query.format(group_id))
+
+    # Initialize Stock Info List
+    stock_info = list()
+
+    # Fetch Results From Cursor
+    for stock_id, stock_name, stock_price, stock_shares in (cursor):
+        stock_info.append((stock_id, stock_name, stock_price, stock_shares))
+
+    # Query To Get User Balance
+    group_query = """
+                 SELECT balance
+                 FROM Group
+                 WHERE group_id = {};
+                 """
+
+    # Execute Query
+    cursor.execute(group_query.format(group_id))
+
+    # Initialize User Balance
+    balance = 0
+
+    # Get Data From Cursor
+    for result in (cursor):
+        balance = float(result[0])
+
+    # Format User Balance
+    balance = "{:,.2f}".format(balance)
+
+    # Query To Get User Shares
+    group_query = """
+                 SELECT SUM(amount)
+                 FROM Group_Stock
+                 WHERE group_id = {};
+                 """
+
+    # Execute Query
+    cursor.execute(group_query.format(group_id))
+
+    # Initialize User Balance
+    stocks_owned = 0
+
+    # Get Data From Cursor
+    for result in (cursor):
+        if (result[0]):
+            stocks_owned = int(result[0])
+
+    # Return Response To Caller
+    return (render_template("portfolio.html", group_id = group_id, balance = balance, stocks_owned = stocks_owned, stock_data = stock_info, navbar = ui.navbar(request)))
 # End Navbar Functions--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 @app.route('/watchlist', methods = ["GET", "POST"])
