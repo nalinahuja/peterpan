@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Error Page</title>
+  </head>
+  <body>
+    {{ navbar | safe }}
+
+    <center>
+      <br>
+      <br>
+      <br>
+      <h2>Error</h2>
+      <br>
+      <p id="message">{{ msg }}</p>
+    </center>
+
+    <script>
+      window.setTimeout(function() {
+        // Set Redirect Message
+        document.getElementById("message").innerHTML = "Redirecting to home page..."
+
+        // Redirect To Homepage
+        window.location.href = "/";
+      }, 2500);
+    </script>
+  </body>
+</html>

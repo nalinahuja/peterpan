@@ -1,0 +1,55 @@
+<html>
+<head>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+{{ navbar | safe }}
+
+<br><br>
+<center>
+<h2>{{data[0]}} Insights</h2>
+<table border = '3' style="width:25%"><tr>
+  <tr>
+    <td>Stock Price</td>
+    <td>{{data[1]}}</td>
+  </tr>
+  <tr>
+    <td>Stock Shares</td>
+    <td>{{data[2]}}</td>
+  </tr>
+</table>
+<p style="margin-top: 10px; font-size: 11px"><i>All data is up to date</i></p>
+</center>
+
+<hr style="width:95%;">
+<center><h2>Stock Trend</h2></center>
+
+<div id="Stock1"></div>
+
+<script>
+  var layout1 = {
+    title: '{{ data[0] }}',
+    xaxis: {
+      title: 'time (min)'
+    },
+    yaxis: {
+      title: 'price (usd)'
+    }
+  };
+
+  var stockGraph1 = {
+    x: new Array(),
+    y: {{ stock_history }},
+    type: 'scatter'
+  };
+
+  for (var i = stockGraph1.y.length; i >= 0; i--) {
+    stockGraph1.x.push("-" + i);
+  }
+
+  var data = [stockGraph1];
+
+  Plotly.newPlot('Stock1', data, layout1);
+</script>
+</body>
+</html>
