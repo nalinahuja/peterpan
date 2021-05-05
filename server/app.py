@@ -25,6 +25,7 @@ from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended import set_access_cookies
 from flask_jwt_extended import unset_access_cookies
+from flask_jwt_extended import verify_jwt_in_request
 
 # End Imports---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -606,16 +607,34 @@ def single_stock(name):
     # Get Result From Cursor
     si = [si[0] for si in (cursor)]
     db.engine.execute(transaction_commit)
+
+    # Get Login Status
+    login_status = request.cookies.get('access_token_cookie')
+
+    # Initialize Stock Watch Field
+    stock_watch = None
+
+    # Query Watchlists
+    if (login_status):
+        # Verify JWT Token In Request
+        verify_jwt_in_request(request)
+
+        # Get Current User ID
+        user_id = get_jwt_identity()
+
+        # Query To Get Stock Watchlist Status
+        stock_watch = Watchlist.query.filter_by(user_id = user_id, stock_id = 0).first()
+
     # Determine Stock Existence
     if((stock_price is None) or (stock_share is None)):
         # Return Response To User
         return (render_template("error.html", navbar = ui.navbar(request), msg = "That stock does not exist, please try another stock."))
     else:
         # Format Stock Data As Tuple
-        stock_info = [name, stock_price, stock_share]
+        stock_info = [name, stock_price, stock_share, (stock_watch is None)]
 
         # Return Response To User
-        return (render_template("stock_single.html", stock_history = si, data = stock_info, navbar = ui.navbar(request)))
+        return (render_template("stock_single.html", login = login_status, stock_history = si, data = stock_info, navbar = ui.navbar(request)))
 
 @app.route('/buy', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
@@ -625,8 +644,6 @@ def buy():
 
     # Open Database Cursor
     cursor = cnx.cursor()
-
-    # Initalize Isolation Level
 
     # Detect For Post Method
     if (request.method == "POST"):
@@ -955,24 +972,6 @@ def watchlist():
 
     # Return Response To User
     return (render_template("watchlist.html", data = watch_info, navbar = ui.navbar(request)))
-
-@app.route('/insert_watchlist/<stock_id>', methods = ["GET", "POST"])
-@jwt_required(locations = ['cookies'])
-def insert_into_watchlist(stock_id):
-    # Get Current User ID
-    user_id = get_jwt_identity()
-
-    # Open Database Cursor
-    cursor = cnx.cursor()
-
-    # Query To Insert into Watchlist
-    insert_watchlist_query = """
-                            INSERT INTO Watchlist (user_id,stock_id)
-                            VALUES ({}, {});
-                            """
-
-    cursor.execute(insert_watchlist_query.format(user_id, stock_id))
-    pass
 
 @app.route('/groups/<group_id>', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])

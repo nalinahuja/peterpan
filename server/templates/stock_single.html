@@ -17,14 +17,26 @@
     <td>Stock Shares</td>
     <td>{{data[2]}}</td>
   </tr>
+
+  {% if login %}
+  <tr>
+    <td>Watching</td>
+    {% if data[3] %}
+      <td>No <form style="margin-top: 15px;display: inline-block;" action="/watchlist" method="POST"><input type="submit" name="" value="Watch?"/></form></td>
+    {% else %}
+      <td>Yes <form style="margin-top: 15px;display: inline-block;" action="/watchlist" method="POST"><input type="submit" name="upvote" value="Unwatch?"/></form></td>
+    {% endif %}
+  </tr>
+  {% endif %}
 </table>
 <p style="margin-top: 10px; font-size: 11px"><i>All data is up to date</i></p>
-</center>
 
 <hr style="width:95%;">
-<center><h2>Stock Trend</h2></center>
+<center><h2>{{data[0]}} Stock Trend</h2></center>
 
 <div id="Stock1"></div>
+
+</center>
 
 <script>
   var layout1 = {
