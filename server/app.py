@@ -295,7 +295,7 @@ def page_not_found(e):
     return (render_template('404.html', navbar = ui.navbar(request))), 404
 
 @app.route("/", methods=['GET', 'POST'])
-def home():
+def index():
     # Open Database Cursor
     cursor = cnx.cursor()
 
@@ -345,7 +345,7 @@ def home():
     for result in (cursor):
         transaction_cnt = int(result[0])
 
-    # Query To Fetch Number Of Stocks In Market
+    # Query To Fetch Average Transaction Prices In The Last 24hrs
     query = """
             SELECT type, AVG(price)
             FROM Transaction JOIN User_Transaction ON Transaction.transaction_id = User_Transaction.transaction_id
@@ -361,7 +361,7 @@ def home():
     # Execute Query
     cursor.execute(query)
 
-    # Format Prices
+    # Format Price Data
     avg_buy_price = "{:.2f}".format(sum(t[1] for t in cursor if (t[0] == BUY)))
     avg_sell_price = "{:.2f}".format(sum(t[1] for t in cursor if (t[0] == SELL)))
 
@@ -372,49 +372,60 @@ def home():
             GROUP BY stock_id
             UNION
             SELECT stock_id, price_change AS avg_price
-            FROM Stock_Update WHERE update_id = 49
+            FROM Stock_Update WHERE update_id = (SELECT COUNT(*) - 1 FROM Stock_Update)
             GROUP BY stock_id;
             """
 
     # Execute Query
     cursor.execute(query)
 
+    # Initialize Stock Dictionary
     stocks = defaultdict(int)
 
+    # Extract Data From Cursor
     for result in (cursor):
+        # Calculate Average Stock Price
         if (not(result[0] in stocks)):
             stocks[result[0]] = result[1]
         else:
             stocks[result[0]] += result[1]
             stocks[result[0]] /= 2
 
-    # Get Stocks Ranked By Growth
-    stock_rank = sorted(stocks.items(), key = lambda x : x[1], reverse = True)
-
-    # Initialize Name List
-    namelist = []
+    # Get Top Two Stocks Ranked By Decreasing Historical Average Price
+    stock_rank = sorted(stocks.items(), key = lambda x : x[1], reverse = True)[:2]
 
     # Initialize Data Lists
-    datalists = []
-    for stock_id, _ in (stock_rank[:2]):
+    namelist, datalists = [], []
+
+    # Iterate Over Stock Ranks
+    for stock_id, _ in (stock_rank):
+        # Query To Get All Price Changes Of A Stock ID
         query = """
                 SELECT price_change
                 FROM Stock_Update
-                WHERE stock_id = {}
+                WHERE stock_id = {};
                 """
+
+        # Execute Query
         cursor.execute(query.format(stock_id))
-        datalist = [pc[0] for pc in cursor]
+
+        # Fetch Data From Cursor
+        datalist = [pc[0] for pc in (cursor)]
+
+        # Append Data To List
         datalists.append(datalist)
 
+        # Query To Get Stock Name Of a Stock ID
         query = """
                 SELECT name
                 FROM Stock
-                WHERE stock_id = {}
+                WHERE stock_id = {};
                 """
 
+        # Execute Query
         cursor.execute(query.format(stock_id))
 
-        # Fetch Data
+        # Fetch Data From Cursor
         for result in (cursor):
             namelist.append(str(result[0]))
 
