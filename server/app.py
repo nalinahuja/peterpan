@@ -528,9 +528,14 @@ def register():
             return (render_template('register.html', navbar = ui.navbar(request), error = True, msg = "User ID exists, please choose a different one."))
 
         # Use ORM to Add New User
-        new_user = User(user_id = input_user_id,balance = 2500000, password = input_password)
-        db.session.add(new_user)
-        db.session.commit()
+        user_query = """
+                     INSERT INTO User (user_id, balance, password)
+                     VALUES ({}, {}, {});
+                     """
+
+        # Execute Query
+        cursor.execute(user_query.format(input_user_id, 2500000, input_password))
+        cnx.commit()
 
         # Get User Object Using ORM
         obj = User.query.filter_by(user_id = input_user_id, password = input_password).first()
