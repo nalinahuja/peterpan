@@ -289,7 +289,6 @@ def update_stock():
 
 # End Internal Functions----------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Page Not Found Handler
 @app.errorhandler(404)
 def page_not_found(e):
     # Return 404 page
