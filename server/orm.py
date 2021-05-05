@@ -38,22 +38,12 @@ class Group_Stock(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey('Group.group_id'), primary_key = True, nullable = False)
     stock_id = db.Column(db.Integer, db.ForeignKey('Stock.stock_id'), primary_key = True, nullable = False)
 
-    def __init__(self, group_id, stock_id):
-        self.group_id = group_id
-        self.stock_id = stock_id
-
 class Transaction(db.Model):
     __tablename__ = 'Transaction'
     transaction_id = db.Column(db.Integer, primary_key = True, nullable = False)
     amount = db.Column(db.Float, nullable = False)
     date = db.Column(db.Integer, nullable = False)
     price = db.Column(db.Float, nullable = False)
-
-    def __init__(self, transaction_id, amount, date, price):
-        self.transaction_id = transaction_id
-        self.amount = amount
-        self.date = date
-        self.price = price
 
 class User_Transaction(db.Model):
     __tablename__ = 'User_Transaction'
@@ -62,24 +52,12 @@ class User_Transaction(db.Model):
     user_id = db.Column(db.String(30), db.ForeignKey('User.user_id'), primary_key = True, nullable = False)
     stock_id = db.Column(db.Integer, db.ForeignKey('Stock.stock_id'), primary_key = True, nullable = False)
 
-    def __init__(self, transaction_id, type, user_id, stock_id):
-        self.transaction_id = transaction_id
-        self.type = type
-        self.user_id = user_id
-        self.stock_id = stock_id
-
 class Group_Transaction(db.Model):
     __tablename__ = 'Group_Transaction'
     transaction_id = db.Column(db.Integer, db.ForeignKey('Transaction.transaction_id'), primary_key = True, nullable = False)
     type = db.Column(db.Boolean, nullable = False)
     group_id = db.Column(db.Integer, db.ForeignKey('Group.group_id'), primary_key = True, nullable = False)
     stock_id = db.Column(db.Integer, db.ForeignKey('Stock.stock_id'), primary_key = True, nullable = False)
-
-    def __init__(self, transaction_id, type, group_id, stock_id):
-        self.transaction_id = transaction_id
-        self.type = type
-        self.group_id = group_id
-        self.stock_id  = stock_id
 
 # Create All Databases
 db.create_all()

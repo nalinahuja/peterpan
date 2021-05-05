@@ -648,120 +648,43 @@ def single_stock(name):
 @jwt_required(locations = ['cookies'])
 def buy():
     # Get Current User ID
-    curr_user_id = get_jwt_identity()
+    user_id = get_jwt_identity()
 
-    # Create Database Cursor
+    # Open Database Cursor
     cursor = cnx.cursor()
 
-    # Set Transaction Level
-    db.engine.execute(repeatable_read)
-    db.engine.execute(transaction_start)
+    # Detect For Post Method
+    if (request.method == "POST"):
+        pass
+    else:
+        # Initialize Stock Data List
+        stock_info = []
 
-    # Detect If Post Method
-    if (request.method == 'POST'):
-        #if a user clicks on buy button,record his response
-        userDetails = request.form
-        stock_id = userDetails["stock_id"]
-        number = userDetails["number"]
-        data = (int(stock_id),)
+        # Execute Query To Get All Stock
+        cursor.execute(get_stock)
 
-        #get stock price for the stock user want to buy
-        cursor.execute(get_stock_by_stock_id, data)
-        stock_price = 0
-        stock_share = 0
-        stock_name = ""
-        for name,price,share in cursor:
-            #print(price)
-            stock_name = name
-            stock_price = price
-            stock_share = share
-        #if there is no stock price
-        if(stock_price == 0):
-            return (render_template("error.html", navbar = ui.navbar(request), msg = "Invalid stock ID. Please Go back and try again!"))
+        # Fetch Stock Data From Cursor
+        for stock_id, name, price, share in (cursor):
+            stock_info.append((stock_id,name,price,share))
 
-        #get user balance
-        cur_info = (curr_user_id,)
-        cursor.execute(get_user_balance,cur_info)
-        balance = -5
-        for user_balance in cursor:
-            balance = user_balance[0]
-        spent = stock_price * int(number)
-        remaining = balance - spent
-        #if user does not have enough balance
-        if(remaining < 0):
-            return (render_template("error.html", navbar = ui.navbar(request), msg = "Not Enough Balance!"))
+        # Close Cursor
+        cursor.close()
 
-        #increase stock share after user buys it
-        stock_share = stock_share + int(number)
-        update_info = (stock_share,stock_id)
-        cursor.execute(update_stock_share,update_info)
-        cnx.commit()
+        # Return Response To User
+        return (render_template("buy.html", data = stock_info, navbar = ui.navbar(request)))
 
-        #update user_balance
-        update_info = (remaining,curr_user_id)
-        cursor.execute(update_user_balance,update_info)
-        cnx.commit()
-
-        #update Watchlist
-        get_info = (curr_user_id,stock_id)
-        cursor.execute(get_watchlist,get_info)
-        check = -1
-        for id in cursor:
-            check = id
-        #there is no same (stock_id,user_id) in watchlist
-        if(check == -1):
-            cursor.execute(insert_watchlist,get_info)
-            cnx.commit()
-
-        #update transaction
-        #get tranaction_id
-        cursor.execute(get_transaction_number)
-        transaction_id = 0
-        for x in cursor:
-            transaction_id = x[0]
-        transaction_id += 1
-        #update transaction table
-        #update the stock schema in order to make this query work
-        today = datetime.date.today()
-        insert_info = (transaction_id,int(number),today,stock_price)
-        cursor.execute(insert_transaction,insert_info)
-        cnx.commit()
-
-        #update user_transaction
-        insert_info = (transaction_id,1,curr_user_id,stock_id)
-        cursor.execute(insert_user_transaction,insert_info)
-        cnx.commit()
-
-        #print confirmation table into /templates/confirmation.html
-        confirmation_info = [number,stock_id,stock_name,spent,remaining]
-
-        db.engine.execute(transaction_commit)
-        return render_template("confirmation_buy.html", data = confirmation_info, navbar = ui.navbar(request))
-
-    #initialize purchase page
-    stock_info = []
-
-    #execute the query for getting all stock information
-    cursor.execute(get_stock)
-
-    #display stock in the UI interface
-    for stock_id, name, price, share in cursor:
-        stock_info.append((stock_id,name,price,share))
-
-    cursor.close()
-
-    #copy all of the code inside buy_template.html into buy.html
-    db.engine.execute(transaction_commit)
-    return render_template("buy.html", data = stock_info, navbar = ui.navbar(request))
+# get stock data
+# get user balance data
+# update user balance
+# update stock shares correctly
 
 @app.route('/sell', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
 def sell():
     # Get Current User ID
-    curr_user_id = get_jwt_identity()
+    user_id = get_jwt_identity()
 
-    # TODO
-    return ""
+
 
 @app.route('/portfolio')
 @jwt_required(locations = ['cookies'])
@@ -828,6 +751,14 @@ def watchlist():
 
     # Return Response To User
     return (render_template("watchlist.html", data = watch_info, navbar = ui.navbar(request)))
+
+@app.route('/groups/<group_id>', methods = ["GET", "POST"])
+@jwt_required(locations = ['cookies'])
+def group():
+    # Get Current User ID
+    user_id = get_jwt_identity()
+
+    pass
 
 @app.route("/user_transactions", methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
