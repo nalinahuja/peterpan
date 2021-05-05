@@ -78,7 +78,7 @@ get_user_balance = """
 
 get_group_balance = """
                    SELECT balance
-                   FROM Group
+                   FROM Group_Info
                    WHERE group_id = %s;
                    """
 
@@ -135,7 +135,7 @@ update_user_balance = """
                       """
 
 update_group_balance = """
-                      UPDATE Group
+                      UPDATE Group_Info
                       SET balance = %s
                       WHERE group_id = %s;
                       """
@@ -1033,7 +1033,7 @@ def group_portfolio(group_id):
     # Query To Get All User Information
     group_query = """
                  SELECT s.stock_id, s.name, s.price, us.amount
-                 FROM Group g
+                 FROM Group_Info g
                  JOIN Group_Stock gs
                  ON g.group_id = gs.group_id
                  JOIN Stock s
@@ -1054,7 +1054,7 @@ def group_portfolio(group_id):
     # Query To Get User Balance
     group_query = """
                  SELECT balance
-                 FROM Group
+                 FROM Group_Info
                  WHERE group_id = {};
                  """
 
@@ -1272,7 +1272,7 @@ def group_sell(group_id):
         # Query To Get Group Balace
         query = """
                 SELECT balance
-                FROM Group
+                FROM Group_Info
                 WHERE user_id = {};
                 """
 
