@@ -1370,7 +1370,7 @@ def group_sell(group_id):
         query = """
                 SELECT balance
                 FROM Group_Info
-                WHERE user_id = {};
+                WHERE group_id = {};
                 """
 
         # Execute Query

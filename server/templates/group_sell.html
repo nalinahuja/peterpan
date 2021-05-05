@@ -13,7 +13,7 @@
 <div style="margin-left: 1%;">
   <h2>Sell Stocks</h2>
 
-<form method="POST" action="/">
+<form method="POST" action="{{ url_for('group_sell', group_id = group_id) }}">
   <!-- area that let user enter the stock_id they want to buy-->
   <label for="stock_id">Stock ID:</label><br>
   <input type="text" name = "stock_id" id="stock_id"><br>
