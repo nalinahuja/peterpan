@@ -295,7 +295,7 @@ def page_not_found(e):
     # Return 404 page
     return (render_template('404.html', navbar = ui.navbar(request))), 404
 
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/", methods = ['GET', 'POST'])
 def index():
     # Check For POST Method
     if (request.method == 'POST'):
@@ -460,7 +460,7 @@ def index():
                             transaction_cnt = transaction_cnt, avg_buy_price = avg_buy_price, avg_sell_price = avg_sell_price, \
                             stock_name_1 = namelist[0], stock_name_2 = namelist[1], price_arr_1 = str(datalists[0]), price_arr_2 = str(datalists[1])))
 
-@app.route("/login", methods=['GET', 'POST'])
+@app.route("/login", methods = ['GET', 'POST'])
 def login():
     if (request.method == 'POST'):
         # Fetch User Input Data
@@ -491,7 +491,7 @@ def login():
     # Render Default Login Page
     return (render_template('login.html', navbar = ui.navbar(request), error = False))
 
-@app.route("/logoff", methods=['GET', 'POST'])
+@app.route("/logoff", methods = ['GET', 'POST'])
 @jwt_required(locations = ['cookies'])
 def logoff():
     # Fetch User Access Token
@@ -503,7 +503,7 @@ def logoff():
     # Send Response
     return (response)
 
-@app.route("/register", methods=['GET', 'POST'])
+@app.route("/register", methods = ['GET', 'POST'])
 def register():
     # Open Database cursor
     cursor = cnx.cursor()
@@ -565,7 +565,7 @@ def register():
     # Return Response To Client
     return (render_template('register.html', navbar = ui.navbar(request)))
 
-@app.route("/search/<search_info>", methods=['GET', 'POST'])
+@app.route("/search/<search_info>", methods = ['GET', 'POST'])
 def search(search_info):
     # Open Cursor
     cursor = cnx.cursor()
