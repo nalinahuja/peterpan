@@ -58,15 +58,15 @@ user_account_money = """
 
 
 get_stock_by_stock_name = """
-                          SELECT stock_id, price, share
+                          SELECT stock_id,price,share
                           FROM Stock
-                          Where name = %s;
+                          WHERE name = %s;
                           """
 
 get_stock_by_stock_id = """
-                        SELECT name, price, share
+                        SELECT name,price,share
                         FROM Stock
-                        Where stock_id = %s;
+                        WHERE stock_id = %s;
                         """
 
 get_user_balance = """
@@ -231,7 +231,8 @@ def search_function(search_word, cursor):
             return result
     return -1
 
-def update_stock_every_5_minutes():
+# TODO: Fix Function
+def update_stock():
     cursor = cnx.cursor()
     print ("update started")
     #get maximum number of update id
@@ -277,14 +278,14 @@ def update_stock_every_5_minutes():
     print("update ended")
     cursor.close()
 
-# Initialize Background Scheduler
-scheduler = BackgroundScheduler()
-
-# Create New Job
-scheduler.add_job(update_stock_every_5_minutes, 'interval', minutes = 5)
-
-# Start Scheduler
-scheduler.start()
+# # Initialize Background Scheduler
+# scheduler = BackgroundScheduler()
+#
+# # Create New Job
+# scheduler.add_job(update_stock, 'interval', minutes = 5)
+#
+# # Start Scheduler
+# scheduler.start()
 
 # End Internal Functions----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -576,104 +577,82 @@ def search(search_info):
     # Return Response To Client
     return render_template("search.html", data = data, navbar = ui.navbar(request))
 
-@app.route("/watchlist/<user_id>", methods=['GET', 'POST'])
-def add_to_watchlist():
-    cursor = cnx.cursor()
-    if(request.method == 'POST'):
-        userDetails = request.form
-        stock_id = userDetails["stock_id"]
-        number = userDetails["number"]
-        data = (int(stock_id),)
-
-        userid = user_id
-
-        cursor.execute(insert_watchlist, userid, stock_id)
-        cnx.commit()
-    cursor.close()
-
-@app.route("/stock/<name>", methods = ["GET", "POST"])
-def stock_name():
-    cursor = cnx.cursor()
-    if(request.method == 'POST'):
-      #if a user clicks on buy button,record his response
-        userDetails = request.form
-        stock_id = userDetails["stock_id"]
-        number = userDetails["number"]
-        data = (int(stock_id),)
-
-        #get stock price for the stock user want to view
-        cursor.execute(get_stock_by_stock_id,data)
-        stock_price = 0
-        stock_share = 0
-        stock_name = ""
-        for name,price,share in cursor:
-            #print(price)
-            stock_name = name
-            stock_price = price
-            stock_share = share
-        #if there is no stock price
-        if(stock_price == 0):
-            return "Invalid stock ID. Please Go back and try again"
-
-        stock_info = [stock_name, stock_price, stock_share]
-
-        return render_template("display_stock.html", data = stock_info, navbar = ui.navbar(request))
-
-@app.route("/stock", methods = ["GET", "POST"])
-def stock():
-    cursor = cnx.cursor()
-    if(request.method == 'POST'):
-      #if a user clicks on buy button,record his response
-        userDetails = request.form
-        stock_id = userDetails["stock_id"]
-        number = userDetails["number"]
-        data = (int(stock_id),)
-
-        #get stock price for the stock user want to view
-        cursor.execute(get_stock, data)
-        stock_price = 0
-        stock_share = 0
-        stock_name = ""
-        for name,price,share in cursor:
-            #print(price)
-            stock_name = name
-            stock_price = price
-            stock_share = share
-        #if there is no stock price (UNSURE IF THIS IS NEEDED FOR DISPLAYING ALL STOCKS. NO, RIGHT?)
-        if(stock_price == 0):
-            return "Invalid stock ID. Please Go back and try again"
-
-        stock_info = [stock_name, stock_price, stock_share]
-
-        return render_template("display_stock.html", data = stock_info, navbar = ui.navbar(request))
-
-# Page to display the transaciton history
-@app.route("/transactions", methods = ["GET", "POST"])
-@jwt_required(locations = ['cookies'])
-def transaction():
-    # Creating the cursor
+@app.route("/stocks", methods = ["GET", "POST"])
+def multi_stock():
+    # Open Database Cursor
     cursor = cnx.cursor()
 
-    #user details (FOR now)
-    user_id = 0
+    # Query To Get Stock Data By Name
+    query = """
+            SELECT name, price, share
+            FROM Stock;
+            """
 
-    #transaction list
-    t_list = []
+    # Get Stock Data By Name
+    cursor.execute(query)
 
-    #executing the query to get the transaction info
-    cursor.execute(get_transactions.format(user_id))
-    for stock_id, name, amount, transaction_type, price in cursor:
-        s_id = stock_id
-        t_type = transaction_type
-        s_name = stock_id
-        t_amount = amount
-        total_cost = amount * price
+    # Initialize Stock Data
+    stock_data = []
 
-        t_list.append((s_id, t_type, s_name, t_amount, total_cost))
+    # Extract Data From Cursor
+    for row in (cursor):
+        # Set Stock Data
+        stock_data.append(row)
 
-    cursor.close()
+    # Determine Stock Existence
+    if(not(len(stock_data))):
+        # Return Response To User
+        return (render_template("error.html", navbar = ui.navbar(), msg = "We could not find any stocks"))
+    else:
+        # Return Response To User
+        return (render_template("stock_multi.html", navbar = ui.navbar(request), stock_data = stock_data))
 
-    return render_template("transactions.html", data = t_list, navbar = ui.navbar(request))
+@app.route("/stocks/<name>", methods = ["GET", "POST"])
+def single_stock(name):
+    # Open Database Cursor
+    cursor = cnx.cursor()
+
+    # Query To Get Stock Data By Name
+    query = """
+            SELECT price, share
+            FROM Stock
+            WHERE name = "{}";
+            """
+
+    # Get Stock Data By Name
+    cursor.execute(query.format(name))
+
+    # Initialize Stock Data
+    stock_price, stock_share = None, None
+
+    # Extract Data From Cursor
+    for price, share in (cursor):
+        # Set Stock Data
+        stock_price, stock_share = price, share
+
+    # Query To Get Stock History Data
+    query = """
+            SELECT price_change
+            FROM Stock_Update
+            WHERE stock_id = (SELECT stock_id FROM Stock WHERE name = "{}");
+            """
+
+    # Get Stock Data By Name
+    cursor.execute(query.format(name))
+
+    # Get Result From Cursor
+    si = [si[0] for si in (cursor)]
+
+    # Determine Stock Existence
+    if((stock_price is None) or (stock_share is None)):
+        # Return Response To User
+        return (render_template("error.html", navbar = ui.navbar(), msg = "Stock does not exist, please try another stock."))
+    else:
+        # Format Stock Data As Tuple
+        stock_info = [name, stock_price, stock_share]
+
+        # Return Response To User
+        return (render_template("stock_single.html", stock_history = si, data = stock_info, navbar = ui.navbar(request)))
 
 # Page to display when user clicks buy stock
 @app.route('/buy', methods = ["GET", "POST"])
@@ -867,6 +846,51 @@ def sell():
     #copy it all into buy.html
     return (render_template('sell.html', navbar = ui.navbar(request)))
 
+# End Navbar Functions--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# TODO: Review this
+@app.route("/watchlist/<user_id>", methods=['GET', 'POST'])
+def add_to_watchlist():
+    cursor = cnx.cursor()
+    if(request.method == 'POST'):
+        userDetails = request.form
+        stock_id = userDetails["stock_id"]
+        number = userDetails["number"]
+        data = (int(stock_id),)
+
+        userid = user_id
+
+        cursor.execute(insert_watchlist, userid, stock_id)
+        cnx.commit()
+    cursor.close()
+
+# Page to display the transaciton history
+@app.route("/transactions", methods = ["GET", "POST"])
+@jwt_required(locations = ['cookies'])
+def transaction():
+    # Creating the cursor
+    cursor = cnx.cursor()
+
+    #user details (FOR now)
+    user_id = 0
+
+    #transaction list
+    t_list = []
+
+    #executing the query to get the transaction info
+    cursor.execute(get_transactions.format(user_id))
+    for stock_id, name, amount, transaction_type, price in cursor:
+        s_id = stock_id
+        t_type = transaction_type
+        s_name = stock_id
+        t_amount = amount
+        total_cost = amount * price
+
+        t_list.append((s_id, t_type, s_name, t_amount, total_cost))
+
+    cursor.close()
+
+    return render_template("transactions.html", data = t_list, navbar = ui.navbar(request))
 
 @app.route('/group_transaction_history/<group_id>')
 @jwt_required(locations = ['cookies'])

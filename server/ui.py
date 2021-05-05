@@ -27,7 +27,7 @@ def navbar(request):
                     <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
                   </li>
                   <li class="nav-item active">
-                    <a class="nav-link" href="">Portfolio</a>
+                    <a class="nav-link" href="/stocks">Stocks</a>
                   </li>
                   <li class="nav-item active">
                     <a class="nav-link" href="/buy">Buy</a>
@@ -36,7 +36,7 @@ def navbar(request):
                     <a class="nav-link" href="/sell">Sell</a>
                   </li>
                   <li class="nav-item active">
-                    <a class="nav-link" href="/groups">Groups</a>
+                    <a class="nav-link" href="">Portfolio</a>
                   </li>
                 </ul>
 
