@@ -1028,7 +1028,7 @@ def transaction_history(group_id):
         group_transaction.append((stock_id, stock_name, transaction_type, amount, price, total_cost, date))
     return render_template("transactions_group.html", data = group_transaction, navbar = ui.navbar(request))
 
-# End External Functions----------------------------------------------------------------------------------------------------------------------------------------------------
+# End Portfolio Functions----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Start Server
 if __name__ == "__main__":
