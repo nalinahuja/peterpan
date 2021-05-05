@@ -843,7 +843,7 @@ def insert_into_watchlist(stock_id):
     # Query To Insert into Watchlist
     insert_watchlist_query = """
                             INSERT INTO Watchlist (user_id,stock_id)
-                            VALUES (%s, %s);
+                            VALUES ({}, {});
                             """
 
     cursor.execute(insert_watchlist_query.format(user_id, stock_id))
