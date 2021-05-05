@@ -1057,38 +1057,39 @@ def join_group():
         for result in cursor:
             group_id = int(result[0])
 
-        if(group_id is not None):
+        if (group_id is not None):
             print(group_id)
             return (render_template("error.html", navbar = ui.navbar(request), msg = "you already belong to a group, be loyal!"))
-        else:
-            # Get Group From Database
-            group = Group_Info.query.filter_by(group_id = group_id).first()
 
-            if (not(group)):
-                group_id = input_group_id
-                #get user balance
-                input_token = (user_id,)
-                balance = 0
-                cursor.execute(get_user_balance,input_token)
-                for user_balance in cursor:
-                    balance = int(user_balance[0])
+        # Get Group From Database
+        group = Group_Info.query.filter_by(group_id = group_id).first()
 
-                #if balance is not enough
-                input_money = int(input_money)
-                if(balance < input_money):
-                    db.session.commit()
-                    return (render_template("error.html", navbar = ui.navbar(request), msg = "Not enough money"))
+        if (not(group)):
+            group_id = input_group_id
 
-                query = """
-                        INSERT INTO Group_Info (group_id, balance)
-                        VALUES ({}, {});
-                        """
+            #get user balance
+            input_token = (user_id,)
+            balance = 0
+            cursor.execute(get_user_balance,input_token)
+            for user_balance in cursor:
+                balance = int(user_balance[0])
 
-                cursor.execute(query.format(group_id, input_money))
-                cnx.commit()
-            else:
+            #if balance is not enough
+            input_money = int(input_money)
+            if(balance < input_money):
                 db.session.commit()
-                return (render_template("error.html", navbar = ui.navbar(request), msg = "this group already exists, please try another group_id!"))
+                return (render_template("error.html", navbar = ui.navbar(request), msg = "Not enough money"))
+
+            query = """
+                    INSERT INTO Group_Info (group_id, balance)
+                    VALUES ({}, {});
+                    """
+
+            cursor.execute(query.format(group_id, input_money))
+            cnx.commit()
+        else:
+            db.session.commit()
+            return (render_template("error.html", navbar = ui.navbar(request), msg = "this group already exists, please try another group_id!"))
 
         #update a group's balance using ORM
         input_token = (group_id,)
