@@ -676,8 +676,8 @@ def buy():
     # Detect For Post Method
     if (request.method == "POST"):
         # Get User Data From Form
-        # db.engine.execute(repeatable_read)
-        # db.engine.execute(transaction_start)
+        db.engine.execute(repeatable_read)
+        db.engine.execute(transaction_start)
         userDetails = request.form
         stock_id = userDetails["stock_id"]
         stock_number = userDetails["number"]
