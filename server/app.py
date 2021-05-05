@@ -1431,13 +1431,6 @@ def user_transactions():
     # Return Reponse To User
     return (render_template("transactions_user.html", data = t_list, navbar = ui.navbar(request)))
 
-@app.route('/group', methods = ["GET", "POST"])
-@jwt_required(locations = ['cookies'])
-def group():
-    # Get Current User ID
-    user_id = get_jwt_identity()
-
-    
 
 @app.route('/group_transactions/<group_id>')
 @jwt_required(locations = ['cookies'])
