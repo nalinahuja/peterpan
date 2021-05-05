@@ -835,11 +835,11 @@ def add_to_watchlist():
 @app.route("/transactions", methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
 def transaction():
+    # Get Current User ID
+    user_id = get_jwt_identity()
+
     # Creating the cursor
     cursor = cnx.cursor()
-
-    #user details (FOR now)
-    user_id = 0
 
     #transaction list
     t_list = []
