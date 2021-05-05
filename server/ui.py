@@ -36,7 +36,7 @@ def navbar(request):
                     <a class="nav-link" href="/sell">Sell</a>
                   </li>
                   <li class="nav-item active">
-                    <a class="nav-link" href="">Portfolio</a>
+                    <a class="nav-link" href="/portfolio">Portfolio</a>
                   </li>
                 </ul>
 

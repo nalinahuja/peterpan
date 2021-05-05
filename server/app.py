@@ -477,7 +477,7 @@ def login():
             return (render_template('login.html', navbar = ui.navbar(request), error = True))
 
         # Create Response
-        response = make_response(redirect('/users/{}'.format(obj.user_id)))
+        response = make_response(redirect('/portfolio'.format(obj.user_id)))
 
         # Create Access Token
         access_token = create_access_token(identity = input_user_id)
@@ -785,9 +785,12 @@ def sell():
 @jwt_required(locations = ['cookies'])
 def portfolio():
     # Get Current User ID
-    curr_user_id = get_jwt_identity()
+    user_id = get_jwt_identity()
 
+    # Create Cursor
     cursor = cnx.cursor()
+
+    # Query To Get All User Information
     user_query = """
                  SELECT s.stock_id, s.name, s.price, us.amount
                  FROM User u
@@ -797,11 +800,18 @@ def portfolio():
                  ON us.stock_id = s.stock_id
                  WHERE u.user_id = %s;
                  """
+
+    # Execute Query
     cursor.execute(user_query, user_id)
+
+    # Initialize User Info List
     user_info = list()
-    for stock_id, stock_name, stock_price, stock_shares in cursor:
+
+    # Fetch Results From Cursor
+    for stock_id, stock_name, stock_price, stock_shares in (cursor):
         user_info.append((stock_id, stock_name, stock_price, stock_shares))
-    return render_template("user.html", data = user_info, navbar = ui.navbar(request))
+
+    return (render_template("user.html", data = user_info, navbar = ui.navbar(request)))
 
 # End Navbar Functions--------------------------------------------------------------------------------------------------------------------------------------------------------
 
