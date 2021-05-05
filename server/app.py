@@ -136,18 +136,18 @@ update_user_balance = """
 
 update_group_balance = """
                        UPDATE Group_Info
-                       SET balance = %s
+                       SET balance = %f
                        WHERE group_id = %s;
                        """
 
 insert_user_transaction = """
                           INSERT INTO User_Transaction (transaction_id, type, user_id, stock_id)
-                          VALUES (%s,%s,%s,%s);
+                          VALUES (%d,%d,%s,%d);
                           """
 
 insert_transaction = """
                      INSERT INTO Transaction (transaction_id, amount, date, price)
-                     VALUES (%s,%s,%s,%s);
+                     VALUES (%d,%d,%s,%f);
                      """
 
 insert_watchlist = """
@@ -1102,7 +1102,6 @@ def join_group():
         return render_template("group_join_success.html",navbar = ui.navbar(request))
     cursor.close()
     return render_template("group_join.html",navbar = ui.navbar(request))
-
 
 @app.route('/group_portfolio/<group_id>')
 @jwt_required(locations = ['cookies'])
