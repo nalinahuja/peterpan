@@ -874,6 +874,11 @@ def watchlist():
 
     return (render_template("watchlist.html", data = watch_info, navbar = ui.navbar(request)))
 
+@app.route('/watchlist', methods = ["GET", "POST"])
+@jwt_required(locations = ['cookies'])
+def insert_into_watchlist():
+    
+
 # End External Functions----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Start Server
