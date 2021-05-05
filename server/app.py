@@ -653,9 +653,98 @@ def buy():
     # Open Database Cursor
     cursor = cnx.cursor()
 
+    # Initalize Isolation Level
+    db.engine.execute(repeatable_read)
+    db.engine.execute(transaction_start)
+
     # Detect For Post Method
     if (request.method == "POST"):
-        pass
+        # Get User Data From Form
+        userDetails = request.form
+        stock_id = userDetails["stock_id"]
+        stock_number = userDetails["number"]
+        data = (int(stock_id),)
+
+        # Get Stock Price
+        cursor.execute(get_stock_by_stock_id, data)
+
+        # Initialize Stock Data
+        stock_price = None
+        stock_share = None
+        stock_name = ""
+
+        # Fetch Data From Cursor
+        for name, price, share in (cursor):
+            stock_name = name
+            stock_price = price
+            stock_share = share
+
+            # Verify Stock ID
+            if(not(stock_price)):
+                return (render_template("error.html", navbar = ui.navbar(request), msg = "Invalid stock ID. Please Go back and try again!"))
+
+        # Get User Balance
+        cur_info = (user_id,)
+
+        # Execute Query
+        cursor.execute(get_user_balance, cur_info)
+
+        # Initalize User Balance
+        balance = None
+
+        # Fetch User Data From Cursor
+        for user_balance in (cursor):
+            balance = user_balance[0]
+            spent = stock_price * int(stock_number)
+
+        # Calculate Remaining Funds
+        remaining_funds = balance - spent
+
+        # Verify Remaining Funds
+        if(remaining_funds < 0):
+            return (render_template("error.html", navbar = ui.navbar(request), msg = "Not Enough Balance!"))
+
+        # Decrease Stock Share After Purchase
+        stock_share = stock_share - int(stock_number)
+        update_info = (stock_share,stock_id)
+        cursor.execute(update_stock_share,update_info)
+        cnx.commit()
+
+        # Update User Balance
+        update_info = (remaining_funds,user_id)
+        cursor.execute(update_user_balance,update_info)
+        cnx.commit()
+
+        # Get Transaction Number
+        cursor.execute(get_transaction_number)
+
+        # Initialize Transaction ID
+        transaction_id = 0
+
+        # Fetch Data From Cursor
+        for x in cursor:
+            transaction_id = x[0]
+            transaction_id += 1
+
+        # Update The Transaction Table
+        today = datetime.date.today()
+        insert_info = (transaction_id,int(stock_number),today,stock_price)
+        cursor.execute(insert_transaction,insert_info)
+        cnx.commit()
+
+        # Update User Transaction
+        insert_info = (transaction_id,1,user_id,stock_id)
+        cursor.execute(insert_user_transaction,insert_info)
+        cnx.commit()
+
+        # Format Confirmation Data
+        confirmation_info = [stock_number,stock_id,stock_name,spent,remaining_funds]
+
+        # Commit Data To Database
+        db.engine.execute(transaction_commit)
+
+        # Return Response To user
+        return (render_template("confirmation_buy.html", data = confirmation_info, navbar = ui.navbar(request)))
     else:
         # Initialize Stock Data List
         stock_info = []
@@ -683,6 +772,35 @@ def buy():
 def sell():
     # Get Current User ID
     user_id = get_jwt_identity()
+
+    # Open Database Cursor
+    cursor = cnx.cursor()
+
+    # Detect For Post Method
+    if (request.method == "POST"):
+        userDetails = request.form
+        stock_id = userDetails["stock_id"]
+        stock_number = userDetails["number"]
+
+
+    else:
+        # Initialize Stock Data List
+        stock_info = []
+
+
+
+        # Execute Query To Get All Stock
+        cursor.execute(query)
+
+        # Fetch Stock Data From Cursor
+        for stock_id, name, price, share in (cursor):
+            stock_info.append((stock_id,name,price,share))
+
+        # Close Cursor
+        cursor.close()
+
+        # Return Response To User
+        return (render_template("buy.html", data = stock_info, navbar = ui.navbar(request)))
 
 @app.route('/portfolio')
 @jwt_required(locations = ['cookies'])
@@ -780,20 +898,14 @@ def transaction():
 
     # Get Data From Cursor
     for stock_id, name, amount, transaction_type, price in (cursor):
-        s_id = stock_id
-        t_type = transaction_type
-        s_name = stock_id
-        t_amount = amount
-        total_cost = amount * price
-
         # Add Transactions To List
-        t_list.append((s_id, t_type, s_name, t_amount, total_cost))
+        t_list.append((stock_id, transaction_type, name, amount, amount * price))
 
     # Close Cursor
     cursor.close()
 
     # Return Reponse To User
-    return (render_template("transactions.html", data = t_list, navbar = ui.navbar(request)))
+    return (render_template("transactions_user.html", data = t_list, navbar = ui.navbar(request)))
 
 @app.route('/group_transactions/<group_id>')
 @jwt_required(locations = ['cookies'])
@@ -813,7 +925,7 @@ def transaction_history(group_id):
     for stock_id, stock_name, amount, transaction_type, price, date in cursor:
         total_cost = amount * price
         group_transaction.append((stock_id, stock_name, transaction_type, amount, price, total_cost, date))
-    return render_template("group_transactions.html", data = group_transaction, navbar = ui.navbar(request))
+    return render_template("transactions_group.html", data = group_transaction, navbar = ui.navbar(request))
 
 # End External Functions----------------------------------------------------------------------------------------------------------------------------------------------------
 
