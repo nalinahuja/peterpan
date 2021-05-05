@@ -863,8 +863,6 @@ def sell():
         # Update User Balance
         user_balance += earnings
 
-        print(update_user_balance % (user_balance, user_id))
-
         # Update User Balance
         cursor.execute(update_user_balance % (user_balance, user_id))
         cnx.commit()
@@ -1211,6 +1209,7 @@ def group_buy(group_id):
 
         # Get Group Balance
         cur_info = (group_id,)
+
         # Execute Query
         cursor.execute(get_group_balance, cur_info)
 
