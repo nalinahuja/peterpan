@@ -708,10 +708,17 @@ def buy():
         db.session.add(nt)
         db.session.commit()
 
-        # Update User Transaction
-        nut = User_Transaction(transaction_id = transaction_id,type = BUY,user_id = user_id,stock_id = stock_id)
-        db.session.add(nut)
-        db.session.commit()
+        # Query To Insert User Transaction
+        query = """
+                INSERT INTO User_Transaction (transaction_id, type, user_id, stock_id)
+                VALUES ({}, {}, {}, {});
+                """
+
+        # Execute Query
+        cursor.execute(query.format(transaction_id, BUY, user_id, stock_id))
+
+        # Commit Data To Database
+        cnx.commit()
 
         # Format Confirmation Data
         confirmation_info = [stock_number,stock_id,stock_name,spent,remaining_funds]
