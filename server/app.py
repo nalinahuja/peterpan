@@ -144,6 +144,10 @@ insert_watchlist = """
 
 repeatable_read = "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;"
 
+committed_read = "SET TRANSACTION ISOLATION LEVEL READ COMMITTED;"
+
+serializable = "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;"
+
 transaction_start = "START TRANSACTION;"
 
 transaction_commit = "COMMIT;"
@@ -194,6 +198,8 @@ def unauthorized(callback):
 # End Authentication Initialization------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def update_stock():
+    db.engine.execute(serializable)
+    db.engine.execute(transaction_start)
     cursor = cnx.cursor()
     print ("update started")
     #get maximum number of update id
@@ -238,6 +244,7 @@ def update_stock():
         #update the stock change using ORM
     print("update ended")
     cursor.close()
+    db.engine.execute(transaction_commit)
 
 # # Initialize Background Scheduler
 # scheduler = BackgroundScheduler()
@@ -468,6 +475,8 @@ def register():
     # Open Database cursor
     cursor = cnx.cursor()
     if (request.method == 'POST'):
+        db.engine.execute(serializable)
+        db.engine.execute(transaction_start)
         # Fetch User Input Data
         user_data = request.form
         input_user_id = user_data["user_id"]
@@ -516,6 +525,7 @@ def register():
         set_access_cookies(response, access_token)
 
         # Return Response To Client
+        db.engine.execute(transaction_commit)
         return (response)
 
     # Close Cursor
@@ -561,6 +571,8 @@ def multi_stock():
 @app.route("/stocks/<name>", methods = ["GET", "POST"])
 def single_stock(name):
     # Open Database Cursor
+    db.engine.execute(committed_read)
+    db.engine.execute(transaction_start)
     cursor = cnx.cursor()
 
     # Query To Get Stock Data By Name
@@ -593,7 +605,7 @@ def single_stock(name):
 
     # Get Result From Cursor
     si = [si[0] for si in (cursor)]
-
+    db.engine.execute(transaction_commit)
     # Determine Stock Existence
     if((stock_price is None) or (stock_share is None)):
         # Return Response To User
@@ -737,10 +749,13 @@ def sell():
 
     # Detect For Post Method
     if (request.method == "POST"):
+        #set isolation level
+        db.engine.execute(repeatable_read)
+        db.engine.execute(transaction_start)
         userDetails = request.form
         stock_id = userDetails["stock_id"]
         stock_number = userDetails["number"]
-
+        db.engine.execute(transaction_commit)
     else:
         # Initialize Stock Data List
         stock_info = []
