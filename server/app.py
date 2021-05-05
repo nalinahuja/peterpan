@@ -1328,13 +1328,13 @@ def group_sell(group_id):
 
         # Get Stocks In User Possession
         query = """
-                SELECT us.stock_id, st.name, amount, price, share
-                FROM User_Stock us JOIN Stock st ON us.stock_id = st.stock_id
-                WHERE us.user_id = {};
+                SELECT gs.stock_id, st.name, amount, price, share
+                FROM Group_Stock gs JOIN Stock st ON gs.stock_id = st.stock_id
+                WHERE gs.group_id = {};
                 """
 
         # Execute Query To Get All Stock
-        cursor.execute(query.format(user_id))
+        cursor.execute(query.format(group_id))
 
         # Fetch Stock Data From Cursor
         for stock_id, name, amount, price, share in (cursor):
