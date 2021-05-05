@@ -843,7 +843,7 @@ def sell():
                 """
 
         # Execute Query
-        query.execute(query.format(transaction_id, SELL, user_id, stock_id))
+        cursor.execute(query.format(transaction_id, SELL, user_id, stock_id))
 
         # Commit Data To Database
         cnx.commit()
