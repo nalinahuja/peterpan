@@ -99,7 +99,7 @@ get_amount_sold =  """
                    """
 
 get_transactions = """
-                   SELECT U.stock_id, S.name, T.amount, U.type AS transaction_type, T.price
+                   SELECT U.stock_id, S.name, T.amount, U.type AS transaction_type, T.price, T.date
                    FROM User_Transaction AS U JOIN Transaction AS T ON U.transaction_id = T.transaction_id
                    JOIN Stock AS S ON U.stock_id = S.stock_id
                    WHERE U.user_id = {};
@@ -779,15 +779,10 @@ def transaction():
     cursor.execute(get_transactions.format(user_id))
 
     # Get Data From Cursor
-    for stock_id, name, amount, transaction_type, price in (cursor):
-        s_id = stock_id
-        t_type = transaction_type
-        s_name = stock_id
-        t_amount = amount
+    for stock_id, stock_name, amount, transaction_type, price, date in (cursor):
         total_cost = amount * price
-
         # Add Transactions To List
-        t_list.append((s_id, t_type, s_name, t_amount, total_cost))
+        t_list.append((stock_id, stock_name, transaction_type, amount, price, total_cost, date))
 
     # Close Cursor
     cursor.close()
