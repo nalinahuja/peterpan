@@ -194,7 +194,7 @@ jwt = JWTManager(app)
 # Unauthorized Page Access Handler
 @jwt.unauthorized_loader
 def unauthorized(callback):
-    return (render_template('401.html', navbar = ui.navbar(request)))
+    return (render_template('login.html', navbar = ui.navbar(request)))
 
 # End Authentication Initialization------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -569,8 +569,12 @@ def multi_stock():
         # Return Response To User
         return (render_template("stock_multi.html", navbar = ui.navbar(request), stock_data = stock_data))
 
-@app.route("/stocks/<name>", methods = ["GET", "POST"])
-def single_stock(name):
+@app.route("/stocks/<stock_name>", methods = ["GET", "POST"])
+@jwt_required(locations = ['cookies'])
+def single_stock(stock_name):
+    # Get Current User ID
+    user_id = get_jwt_identity()
+
     # Open Database Cursor
     db.engine.execute(committed_read)
     db.engine.execute(transaction_start)
@@ -584,7 +588,7 @@ def single_stock(name):
             """
 
     # Get Stock Data By Name
-    cursor.execute(query.format(name))
+    cursor.execute(query.format(stock_name))
 
     # Initialize Stock Data
     stock_price, stock_share = None, None
@@ -602,28 +606,28 @@ def single_stock(name):
             """
 
     # Get Stock Data By Name
-    cursor.execute(query.format(name))
+    cursor.execute(query.format(stock_name))
 
     # Get Result From Cursor
     si = [si[0] for si in (cursor)]
     db.engine.execute(transaction_commit)
 
-    # Get Login Status
-    login_status = request.cookies.get('access_token_cookie')
-
     # Initialize Stock Watch Field
     stock_watch = None
 
-    # Query Watchlists
-    if (login_status):
-        # Verify JWT Token In Request
-        verify_jwt_in_request(request)
+    # Query To Get Stock ID From Name
+    query = """
+            SELECT stock_id
+            FROM Watchlist
+            WHERE stock_id = (SELECT stock_id FROM Stock WHERE name = "{}");
+            """
 
-        # Get Current User ID
-        user_id = get_jwt_identity()
+    # Execute Query
+    cursor.execute(query.format(stock_name))
 
-        # Query To Get Stock Watchlist Status
-        stock_watch = Watchlist.query.filter_by(user_id = user_id, stock_id = 0).first()
+    # Read Result From Cursor
+    for result in (cursor):
+        stock_watch = result
 
     # Determine Stock Existence
     if((stock_price is None) or (stock_share is None)):
@@ -631,10 +635,10 @@ def single_stock(name):
         return (render_template("error.html", navbar = ui.navbar(request), msg = "That stock does not exist, please try another stock."))
     else:
         # Format Stock Data As Tuple
-        stock_info = [name, stock_price, stock_share, (stock_watch is None)]
+        stock_info = [stock_name, stock_price, stock_share, (stock_watch is not None)]
 
         # Return Response To User
-        return (render_template("stock_single.html", login = login_status, stock_history = si, data = stock_info, navbar = ui.navbar(request)))
+        return (render_template("stock_single.html", stock_history = si, data = stock_info, navbar = ui.navbar(request)))
 
 @app.route('/buy', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
@@ -951,14 +955,40 @@ def watchlist():
     # Open Database Cursor
     cursor = cnx.cursor()
 
+    if (request.method == 'POST'):
+        # Fetch User Input Data
+        user_data = request.form
+        watch_input = user_data["watch_input"]
+
+        # Get Data From Input
+        update_type, stock_name = watch_input.split(" ")
+
+        # Define Watchlist Query
+        update_query = None
+
+        # Determine Query Type
+        if (update_type == "Watch"):
+            update_query = """
+                           INSERT INTO Watchlist (user_id, stock_id)
+                           VALUES ({}, (SELECT stock_id FROM Stock WHERE name = "{}"));
+                           """
+        else:
+            update_query = """
+                           DELETE FROM Watchlist
+                           WHERE user_id = {} AND stock_id = (SELECT stock_id FROM Stock WHERE name = "{}");
+                           """
+
+        # Execute Query
+        cursor.execute(update_query.format(user_id, stock_name))
+
     # Query To Get Watchlist Items
     watchlist_query = """
-                        SELECT s.stock_id, s.name, s.price, s.share
-                        FROM Watchlist w
-                        JOIN Stock s
-                        ON w.stock_id = s.stock_id
-                        WHERE w.user_id = {};
-                        """
+                      SELECT s.stock_id, s.name, s.price, s.share
+                      FROM Watchlist w
+                      JOIN Stock s
+                      ON w.stock_id = s.stock_id
+                      WHERE w.user_id = {};
+                      """
 
     # Execute Query
     cursor.execute(watchlist_query.format(user_id))

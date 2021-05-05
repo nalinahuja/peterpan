@@ -17,17 +17,14 @@
     <td>Stock Shares</td>
     <td>{{data[2]}}</td>
   </tr>
-
-  {% if login %}
   <tr>
     <td>Watching</td>
     {% if data[3] %}
-      <td>No <form style="margin-top: 15px;display: inline-block;" action="/watchlist" method="POST"><input type="submit" name="" value="Watch?"/></form></td>
+      <td>Yes <form style="margin-top: 15px;display: inline-block;" action="/watchlist" method="POST"><input type="submit" name="watch_input" value="Unwatch {{data[0]}}"/></form></td>
     {% else %}
-      <td>Yes <form style="margin-top: 15px;display: inline-block;" action="/watchlist" method="POST"><input type="submit" name="upvote" value="Unwatch?"/></form></td>
+      <td>No <form style="margin-top: 15px;display: inline-block;" action="/watchlist" method="POST"><input type="submit" name="watch_input" value="Watch {{data[0]}}"/></form></td>
     {% endif %}
   </tr>
-  {% endif %}
 </table>
 <p style="margin-top: 10px; font-size: 11px"><i>All data is up to date</i></p>
 
