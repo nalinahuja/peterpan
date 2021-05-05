@@ -2,12 +2,19 @@
 <html>
 <body>
   {{ navbar | safe }}
-  <title>User Stocks</title>
+  <title>User Portfolio</title>
   <div>
     <center>
       <div>
         <br>
-        <h1>User Stocks</h1>
+        <h1>Hello User {{user_id}}!</h1>
+        <center>
+          <i>Current Balance:</i> ${{ balance }}</span>
+          <span style="padding: 5px"></span>
+          <i>Shares Owned:</i> {{ stocks_owned }}
+        </center>
+        <hr style="width:95%;">
+        <h1>Your Stocks</h1>
         <br>
         <div>
           <table border = '3' style="width:60%">
@@ -17,7 +24,7 @@
               <th>Stock Price</th>
               <th># of Shares</th>
             </tr>
-            {% for stock_id, stock_name, stock_price, stock_shares in data %}
+            {% for stock_id, stock_name, stock_price, stock_shares in stock_data %}
             <tr>
               <th>{{stock_id}}</th>
               <th>{{stock_name}}</th>
@@ -29,7 +36,7 @@
         </div>
 
         <hr style="width:95%;">
-        <h1>Logged Transactions</h1>
+        <h1>Your Transactions</h1>
         <br>
         <a href="/user_transactions"><button type="button" class="btn btn-success">User Transactions</button></a>
         <a href="/group_transactions"><button type="button" class="btn btn-danger">Group Transactions</button></a>

@@ -348,8 +348,8 @@ def index():
     cursor.execute(query)
 
     # Format Price Data
-    avg_buy_price = "{:.2f}".format(sum(t[1] for t in cursor if (t[0] == BUY)))
-    avg_sell_price = "{:.2f}".format(sum(t[1] for t in cursor if (t[0] == SELL)))
+    avg_buy_price = "{:,.2f}".format(sum(t[1] for t in cursor if (t[0] == BUY)))
+    avg_sell_price = "{:,.2f}".format(sum(t[1] for t in cursor if (t[0] == SELL)))
 
     # Get Oldest Historical Stock Prices
     query = """
@@ -422,6 +422,11 @@ def index():
 
     # Close Cursor
     cursor.close()
+
+    # Format Data
+    num_stocks = "{:,d}".format(num_stocks)
+    num_shares = "{:,d}".format(num_shares)
+    transaction_cnt = "{:,d}".format(transaction_cnt)
 
     # Render Index Template
     return (render_template('index.html', navbar = ui.navbar(request), num_stocks = num_stocks, num_shares = num_shares, \
@@ -934,15 +939,52 @@ def portfolio():
     # Execute Query
     cursor.execute(user_query.format(user_id))
 
-    # Initialize User Info List
-    user_info = list()
+    # Initialize Stock Info List
+    stock_info = list()
 
     # Fetch Results From Cursor
     for stock_id, stock_name, stock_price, stock_shares in (cursor):
-        user_info.append((stock_id, stock_name, stock_price, stock_shares))
+        stock_info.append((stock_id, stock_name, stock_price, stock_shares))
+
+    # Query To Get User Balance
+    user_query = """
+                 SELECT balance
+                 FROM User
+                 WHERE user_id = {};
+                 """
+
+    # Execute Query
+    cursor.execute(user_query.format(user_id))
+
+    # Initialize User Balance
+    balance = 0
+
+    # Get Data From Cursor
+    for result in (cursor):
+        balance = float(result[0])
+
+    # Format User Balance
+    balance = "{:,.2f}".format(balance)
+
+    # Query To Get User Shares
+    user_query = """
+                 SELECT SUM(amount)
+                 FROM User_Stock
+                 WHERE user_id = {};
+                 """
+
+    # Execute Query
+    cursor.execute(user_query.format(user_id))
+
+    # Initialize User Balance
+    stocks_owned = 0
+
+    # Get Data From Cursor
+    for result in (cursor):
+        stocks_owned = int(result[0])
 
     # Return Response To Caller
-    return (render_template("portfolio.html", data = user_info, navbar = ui.navbar(request)))
+    return (render_template("portfolio.html", user_id = user_id, balance = balance, stocks_owned = stocks_owned, stock_data = stock_info, navbar = ui.navbar(request)))
 
 # End Navbar Functions--------------------------------------------------------------------------------------------------------------------------------------------------------
 
