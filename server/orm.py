@@ -5,6 +5,7 @@ class Stock(db.Model):
     stock_id = db.Column(db.Integer, primary_key = True, nullable = False)
     name = db.Column(db.String(10), nullable = False)
     price = db.Column(db.Float, nullable = False)
+    share = db.Column(db.Integer, nullable = False)
 
 class Stock_Update(db.Model):
     __tablename__ = 'Stock_Update'
@@ -17,6 +18,12 @@ class User(db.Model):
     user_id = db.Column(db.String(30), primary_key = True, nullable = False)
     balance = db.Column(db.Float, nullable = False)
     password = db.Column(db.String(15), nullable = False)
+
+class User_Stock(db.Model):
+    __tablename__ = 'User_Stock'
+    user_id = db.Column(db.String(30), primary_key = True, nullable = False)
+    stock_id = db.Column(db.Integer, db.ForeignKey('Stock.stock_id'), primary_key = True, nullable = False)
+    amount = db.Column(db.Integer, nullable = False)
 
 class Watchlist(db.Model):
     __tablename__ = 'Watchlist'
@@ -37,6 +44,7 @@ class Group_Stock(db.Model):
     __tablename__ = 'Group_Stock'
     group_id = db.Column(db.Integer, db.ForeignKey('Group.group_id'), primary_key = True, nullable = False)
     stock_id = db.Column(db.Integer, db.ForeignKey('Stock.stock_id'), primary_key = True, nullable = False)
+    amount = db.Column(db.Integer, nullable = False)
 
     def __init__(self, group_id, stock_id):
         self.group_id = group_id
@@ -45,7 +53,7 @@ class Group_Stock(db.Model):
 class Transaction(db.Model):
     __tablename__ = 'Transaction'
     transaction_id = db.Column(db.Integer, primary_key = True, nullable = False)
-    amount = db.Column(db.Float, nullable = False)
+    amount = db.Column(db.Integer, nullable = False)
     date = db.Column(db.Integer, nullable = False)
     price = db.Column(db.Float, nullable = False)
 
