@@ -657,7 +657,9 @@ def buy():
         # Fetch User Data From Cursor
         for user_balance in (cursor):
             balance = user_balance[0]
-            spent = stock_price * int(stock_number)
+
+        # Calculate Spent Money
+        spent = stock_price * int(stock_number)
 
         # Calculate Remaining Funds
         remaining_funds = balance - spent
@@ -686,7 +688,9 @@ def buy():
         # Fetch Data From Cursor
         for x in cursor:
             transaction_id = x[0]
-            transaction_id += 1
+
+        # Increment Transaction ID
+        transaction_id += 1
 
         # Update The Transaction Table
         today = datetime.date.today()
@@ -841,7 +845,7 @@ def insert_into_watchlist(stock_id):
                             INSERT INTO Watchlist (user_id,stock_id)
                             VALUES (%s, %s);
                             """
-    
+
     cursor.execute(insert_watchlist_query.format(user_id, stock_id))
     pass
 
