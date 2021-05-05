@@ -189,7 +189,7 @@ jwt = JWTManager(app)
 # Unauthorized Page Access Handler
 @jwt.unauthorized_loader
 def unauthorized(callback):
-    return (render_template('login.html', navbar = ui.navbar(request)))
+    return (render_template('401.html', navbar = ui.navbar(request)))
 
 # End Authentication Initialization------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -749,21 +749,23 @@ def sell():
 
         # Get Stocks In User Possession
         query = """
-
+                SELECT us.stock_id, st.name, amount, price, share
+                FROM User_Stock us JOIN Stock st ON us.stock_id = st.stock_id
+                WHERE us.user_id = {};
                 """
 
         # Execute Query To Get All Stock
-        cursor.execute(query)
+        cursor.execute(query.format(user_id))
 
         # Fetch Stock Data From Cursor
-        for stock_id, name, price, share in (cursor):
-            stock_info.append((stock_id,name,price,share))
+        for stock_id, name, amount, price, share in (cursor):
+            stock_info.append((stock_id, name, amount, price, share))
 
         # Close Cursor
         cursor.close()
 
         # Return Response To User
-        return (render_template("sell.html", navbar = ui.navbar(request)))
+        return (render_template("sell.html", navbar = ui.navbar(request), data = stock_info))
 
 @app.route('/portfolio')
 @jwt_required(locations = ['cookies'])

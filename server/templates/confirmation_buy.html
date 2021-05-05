@@ -28,5 +28,15 @@
       <td>{{data[4]}}</td>
     </tr>
   </table>
+
+  <script>
+    window.setTimeout(function() {
+      // Set Redirect Message
+      document.getElementById("message").innerHTML = "Redirecting to home page..."
+
+      // Redirect To Homepage
+      window.location.href = "/buy";
+    }, 2500);
+  </script>
 </center>
 </html>
