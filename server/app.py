@@ -194,7 +194,7 @@ jwt = JWTManager(app)
 # Unauthorized Page Access Handler
 @jwt.unauthorized_loader
 def unauthorized(callback):
-    return (render_template('login.html', navbar = ui.navbar(request)))
+    return (render_template('401.html', navbar = ui.navbar(request)))
 
 # End Authentication Initialization------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -981,7 +981,8 @@ def portfolio():
 
     # Get Data From Cursor
     for result in (cursor):
-        stocks_owned = int(result[0])
+        if (result[0]):
+            stocks_owned = int(result[0])
 
     # Return Response To Caller
     return (render_template("portfolio.html", user_id = user_id, balance = balance, stocks_owned = stocks_owned, stock_data = stock_info, navbar = ui.navbar(request)))
