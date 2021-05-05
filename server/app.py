@@ -1066,9 +1066,20 @@ def join_group():
             print(group_id)
             return (render_template("error.html", navbar = ui.navbar(request), msg = "you already belong to a group, be loyal!"))
 
-        group = Group_Info.query.filter_by(group_id = group_id).first()
+        group = None
 
         group_id = input_group_id
+
+        query = """
+                SELECT COUNT(*)
+                FROM Group_Info
+                WHERE group_id = {};
+                """
+
+        cursor.execute(query.format(group_id))
+
+        for result in (cursor):
+            group = True
 
         #get user balance
         input_token = (user_id,)
