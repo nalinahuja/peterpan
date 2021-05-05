@@ -193,44 +193,6 @@ def unauthorized(callback):
 
 # End Authentication Initialization------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def search_function(search_word, cursor):
-    #check if the user
-    input_token = (search_word,)
-    result = []
-    stock_id = -1
-    stock_name = ""
-    stock_price = -1
-    stock_share = -1
-    if(search_word.isnumeric()):
-        #if the user inputs the stock id
-        cursor.execute(get_stock_by_stock_id,input_token)
-        for name,price,share in cursor:
-            stock_price = price
-            stock_share = share
-            stock_name = name
-        #stock exists
-        if(stock_price != -1):
-            result.append(search_word)
-            result.append(stock_name)
-            result.append(stock_price)
-            result.append(stock_share)
-            return result
-    else:
-        #if the user inputs the stock name
-        cursor.execute(get_stock_by_stock_name,input_token)
-        for id,price,share in cursor:
-            stock_id = id
-            stock_share = share
-            stock_price = price
-        #stock exists
-        if(stock_id != -1):
-            result.append(stock_id)
-            result.append(search_word)
-            result.append(stock_price)
-            result.append(stock_share)
-            return result
-    return -1
-
 def update_stock():
     cursor = cnx.cursor()
     print ("update started")
@@ -762,11 +724,6 @@ def buy():
         # Return Response To User
         return (render_template("buy.html", data = stock_info, navbar = ui.navbar(request)))
 
-# get stock data
-# get user balance data
-# update user balance
-# update stock shares correctly
-
 @app.route('/sell', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
 def sell():
@@ -935,4 +892,4 @@ def transaction_history(group_id):
 # Start Server
 if __name__ == "__main__":
     # Start Flask App
-    app.run(debug=True)
+    app.run(debug = True)
