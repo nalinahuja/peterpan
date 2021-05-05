@@ -312,7 +312,8 @@ def index():
 
     # Fetch Data From Cursor
     for result in (cursor):
-        num_shares = int(result[0])
+        if (result[0]):
+            num_shares = int(result[0])
 
     # Initialize Stock Market Data
     transaction_cnt = avg_buy_price = avg_sell_price = None
@@ -427,6 +428,12 @@ def index():
     num_stocks = "{:,d}".format(num_stocks)
     num_shares = "{:,d}".format(num_shares)
     transaction_cnt = "{:,d}".format(transaction_cnt)
+
+    # Error Correct Stock Data
+    if (not(namelist)):
+        namelist = [None, None]
+    if (not(datalists)):
+        datalists = [[], []]
 
     # Render Index Template
     return (render_template('index.html', navbar = ui.navbar(request), num_stocks = num_stocks, num_shares = num_shares, \
