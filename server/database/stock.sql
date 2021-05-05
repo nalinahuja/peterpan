@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `Stock_Update` (
   FOREIGN KEY (`stock_id`) REFERENCES Stock(`stock_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE INDEX Update_index ON Stock_Update(update_id) USING HASH;
+CREATE INDEX Update_index ON Stock_Update(update_id) USING BTREE;
 
 -- --------------------------------------------------------
 
