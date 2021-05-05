@@ -775,12 +775,18 @@ def buy():
 @app.route('/sell', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
 def sell():
+    # Get Current User ID
+    curr_user_id = get_jwt_identity()
+
     # TODO
     return ""
 
-@app.route('/portfolio/<user_id>')
+@app.route('/portfolio')
 @jwt_required(locations = ['cookies'])
-def user_info(user_id):
+def portfolio():
+    # Get Current User ID
+    curr_user_id = get_jwt_identity()
+
     cursor = cnx.cursor()
     user_query = """
                  SELECT s.stock_id, s.name, s.price, us.amount
