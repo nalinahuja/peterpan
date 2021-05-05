@@ -193,7 +193,7 @@ def unauthorized(callback):
 
 # End Authentication Initialization------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def search_function(search_word,cursor):
+def search_function(search_word, cursor):
     #check if the user
     input_token = (search_word,)
     result = []
@@ -296,6 +296,15 @@ def page_not_found(e):
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
+    # Check For POST Method
+    if (request.method == 'POST'):
+        # Fetch User Form Data
+        user_data = request.form
+
+        # Redirect To Stock Page
+        if (user_data.get("search")):
+            return (redirect(str('/search/' + user_data["search_info"])))
+
     # Open Database Cursor
     cursor = cnx.cursor()
 
@@ -549,12 +558,23 @@ def register():
 
 @app.route("/search/<search_info>", methods=['GET', 'POST'])
 def search(search_info):
+    # Open Cursor
     cursor = cnx.cursor()
-    data = search_function(search_info,cursor)
+
+    # Pass Cursor To Search Function
+    data = search_function(search_info, cursor)
+
+    print("here")
+
+    # Verify Data
     if(data == -1):
-        return "Stock not found"
+        return (render_template("error.html", navbar = ui.navbar(request), msg = "Stock Not Found!"))
+
+    # Close Cursor
     cursor.close()
-    return render_template("search.html",data = data, navbar = ui.navbar(request))
+
+    # Return Response To Client
+    return render_template("search.html", data = data, navbar = ui.navbar(request))
 
 @app.route("/watchlist/<user_id>", methods=['GET', 'POST'])
 def add_to_watchlist():
