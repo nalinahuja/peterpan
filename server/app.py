@@ -1053,17 +1053,9 @@ def watchlist():
     # Return Response To User
     return (render_template("watchlist.html", data = watch_info, navbar = ui.navbar(request)))
 
-@app.route('/groups/<group_id>', methods = ["GET", "POST"])
-@jwt_required(locations = ['cookies'])
-def group():
-    # Get Current User ID
-    user_id = get_jwt_identity()
-
-    pass
-
 @app.route("/user_transactions", methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
-def transaction():
+def user_transactions():
     # Get Current User ID
     user_id = get_jwt_identity()
 
@@ -1087,9 +1079,17 @@ def transaction():
     # Return Reponse To User
     return (render_template("transactions_user.html", data = t_list, navbar = ui.navbar(request)))
 
+@app.route('/groups/<group_id>', methods = ["GET", "POST"])
+@jwt_required(locations = ['cookies'])
+def group():
+    # Get Current User ID
+    user_id = get_jwt_identity()
+
+    pass
+
 @app.route('/group_transactions/<group_id>')
 @jwt_required(locations = ['cookies'])
-def transaction_history(group_id):
+def group_transactions(group_id):
     cursor = cnx.cursor()
     transaction_query = """
                         SELECT g.stock_id, s.name, t.amount, g.type, t.price, t.date
