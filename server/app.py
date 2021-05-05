@@ -45,31 +45,107 @@ cnx = mysql.connector.connect(user = dbconf['mysql_user'], password = dbconf['my
 # End Database Connector----------------------------------------------------------------------------------------------------------------------------------------------
 
 # Queries For Database
-get_stock = "SELECT stock_id, name, price, share FROM Stock;"
-user_account_money = "SELECT balance FROM User Where user_id = %s;"
-get_stock_by_stock_name = "SELECT stock_id,price,share FROM Stock Where name = %s;"
-get_stock_by_stock_id = "SELECT name,price,share FROM Stock Where stock_id = %s;"
-get_user_balance = "SELECT balance FROM User Where user_id = %s;"
-get_watchlist = "SELECT stock_id FROM Watchlist Where user_id = %s AND stock_id = %s;"
-get_transaction_number = "SELECT COUNT(*) FROM Transaction"
-get_amount_bought = "SELECT SUM(t.amount) FROM Transaction t, User_Transaction ut WHERE t.transaction_id = ut.transaction_id AND ut.type = 1 AND stock_id = %s AND user_id = %s;"
-get_amount_sold =  "SELECT SUM(t.amount) FROM Transaction t, User_Transaction ut WHERE t.transaction_id = ut.transaction_id AND ut.type = 0 AND stock_id = %s AND user_id = %s;"
+get_stock = """
+            SELECT stock_id, name, price, share
+            FROM Stock;
+            """
+
+user_account_money = """
+                     SELECT balance
+                     FROM User
+                     Where user_id = %s;
+                     """
+
+
+get_stock_by_stock_name = """
+                          SELECT stock_id, price, share
+                          FROM Stock
+                          Where name = %s;
+                          """
+
+get_stock_by_stock_id = """
+                        SELECT name, price, share
+                        FROM Stock
+                        Where stock_id = %s;
+                        """
+
+get_user_balance = """
+                   SELECT balance
+                   FROM User
+                   WHERE user_id = %s;
+                   """
+
+get_watchlist = """
+                SELECT stock_id
+                FROM Watchlist
+                WHERE user_id = %s AND stock_id = %s;
+                """
+
+get_transaction_number = """
+                         SELECT COUNT(*)
+                         FROM Transaction;
+                         """
+
+get_amount_bought = """
+                    SELECT SUM(t.amount)
+                    FROM Transaction t, User_Transaction ut
+                    WHERE t.transaction_id = ut.transaction_id AND ut.type = 1 AND stock_id = %s AND user_id = %s;
+                    """
+
+get_amount_sold =  """
+                   SELECT SUM(t.amount)
+                   FROM Transaction t, User_Transaction ut
+                   WHERE t.transaction_id = ut.transaction_id AND ut.type = 0 AND stock_id = %s AND user_id = %s;
+                   """
+
 get_transactions = """
                    SELECT U.stock_id, S.name, T.amount, U.type AS transaction_type, T.price
                    FROM User_Transaction AS U JOIN Transaction AS T ON U.transaction_id = T.transaction_id
-                   JOIN Stock AS S
-                   ON U.stock_id = S.stock_id
-                   WHERE U.user_id = {}
+                   JOIN Stock AS S ON U.stock_id = S.stock_id
+                   WHERE U.user_id = {};
                    """
-get_max_update_id = "SELECT MAX(update_id) FROM Stock_Update"
-get_number_of_stock = "SELECT MAX(stock_id) FROM Stock"
-update_stock_share = "UPDATE Stock SET share = %s WHERE stock_id = %s;"
-update_user_balance = "UPDATE User SET balance = %s WHERE user_id = %s;"
-insert_user_transaction = "INSERT INTO User_Transaction (transaction_id,type,user_id,stock_id) VALUES (%s,%s,%s,%s);"
-insert_transaction = "INSERT INTO Transaction (transaction_id,amount,date,price) VALUES (%s,%s,%s,%s);"
-insert_watchlist = "INSERT INTO Watchlist (user_id,stock_id) VALUES (%s, %s);"
+
+get_max_update_id = """
+                    SELECT MAX(update_id)
+                    FROM Stock_Update;
+                    """
+
+get_number_of_stock = """
+                      SELECT MAX(stock_id)
+                      FROM Stock;
+                      """
+
+update_stock_share = """
+                     UPDATE Stock
+                     SET share = %s
+                     WHERE stock_id = %s;
+                     """
+
+update_user_balance = """
+                      UPDATE User
+                      SET balance = %s
+                      WHERE user_id = %s;
+                      """
+
+insert_user_transaction = """
+                          INSERT INTO User_Transaction (transaction_id, type, user_id, stock_id)
+                          VALUES (%s,%s,%s,%s);
+                          """
+
+insert_transaction = """
+                     INSERT INTO Transaction (transaction_id, amount, date, price)
+                     VALUES (%s,%s,%s,%s);
+                     """
+
+insert_watchlist = """
+                   INSERT INTO Watchlist (user_id,stock_id)
+                   VALUES (%s, %s);
+                   """
+
 repeatable_read = "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;"
+
 transaction_start = "START TRANSACTION;"
+
 transaction_commit = "COMMIT;"
 
 # End SQL Queries-----------------------------------------------------------------------------------------------------------------------------------------------------
