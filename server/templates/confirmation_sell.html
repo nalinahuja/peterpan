@@ -1,0 +1,31 @@
+<html>
+
+{{ navbar | safe }}
+
+<center>
+  <h2>Purchase Confirmed</hr>
+  <br>
+  <br>
+  <table border = '1'><tr>
+    <td>Number of stocks bought</td>
+      <td>{{data[0]}}</td>
+    </tr>
+    <tr>
+      <td>Stock_id</td>
+      <td>{{data[1]}}</td>
+    </tr>
+    <tr>
+      <td>Stock_name</td>
+      <td>{{data[2]}}</td>
+    </tr>
+    <tr>
+      <td>Total_money_spent</td>
+      <td>{{data[3]}}</td>
+    </tr>
+    <tr>
+      <td>Total_money_remaining</td>
+      <td>{{data[4]}}</td>
+    </tr>
+  </table>
+</center>
+</html>
