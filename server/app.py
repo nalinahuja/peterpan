@@ -1123,7 +1123,6 @@ def join_group():
         spec_user.balance = balance
         db.session.commit()
 
-        #add user into group using ORM
         new_group_member = Group_Users(group_id = group_id,user_id = user_id)
         db.session.add(new_group_member)
         db.session.commit()
