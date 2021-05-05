@@ -124,21 +124,21 @@ get_number_of_stock = """
 
 update_stock_share = """
                      UPDATE Stock
-                     SET share = %s
-                     WHERE stock_id = %s;
+                     SET share = {}
+                     WHERE stock_id = {};
                      """
 
 update_user_balance = """
                       UPDATE User
-                      SET balance = %s
+                      SET balance = %f
                       WHERE user_id = %s;
                       """
 
 update_group_balance = """
-                      UPDATE Group_Info
-                      SET balance = %s
-                      WHERE group_id = %s;
-                      """
+                       UPDATE Group_Info
+                       SET balance = %s
+                       WHERE group_id = %s;
+                       """
 
 insert_user_transaction = """
                           INSERT INTO User_Transaction (transaction_id, type, user_id, stock_id)
@@ -528,7 +528,7 @@ def register():
             return (render_template('register.html', navbar = ui.navbar(request), error = True, msg = "User ID exists, please choose a different one."))
 
         # Use ORM to Add New User
-        new_user = User(user_id = input_user_id,balance = 25000000, password = input_password)
+        new_user = User(user_id = input_user_id,balance = 2500000, password = input_password)
         db.session.add(new_user)
         db.session.commit()
 
@@ -676,8 +676,8 @@ def buy():
     # Detect For Post Method
     if (request.method == "POST"):
         # Get User Data From Form
-        db.engine.execute(repeatable_read)
-        db.engine.execute(transaction_start)
+        # db.engine.execute(repeatable_read)
+        # db.engine.execute(transaction_start)
         userDetails = request.form
         stock_id = userDetails["stock_id"]
         stock_number = userDetails["number"]
@@ -703,6 +703,7 @@ def buy():
 
         # Get User Balance
         cur_info = (user_id,)
+
         # Execute Query
         cursor.execute(get_user_balance, cur_info)
 
@@ -726,12 +727,11 @@ def buy():
         # Decrease Stock Share After Purchase
         stock_share = stock_share - int(stock_number)
         update_info = (stock_share,stock_id)
-        cursor.execute(update_stock_share,update_info)
+        cursor.execute(update_stock_share.format(stock_share, stock_id))
         cnx.commit()
 
         # Update User Balance
-        update_info = (remaining_funds,user_id)
-        cursor.execute(update_user_balance,update_info)
+        cursor.execute(update_user_balance % (remaining_funds, user_id))
         cnx.commit()
 
         # Get Transaction Number
@@ -812,7 +812,7 @@ def sell():
 
         # Query To Get User Stock By Stock ID
         query = """
-                SELECT us.stock_id, us.amount, st.name, st.price
+                SELECT us.stock_id, st.share, st.name, st.price
                 FROM User_Stock us JOIN Stock st ON us.stock_id = st.stock_id
                 WHERE us.user_id = {} AND us.stock_id = {};
                 """
@@ -837,8 +837,7 @@ def sell():
         stock_shares += int(sale_amount)
 
         # Increase Stock Shares After Purchase
-        update_info = (stock_shares,stock_id)
-        cursor.execute(update_stock_share,update_info)
+        cursor.execute(update_stock_share.format(stock_shares,stock_id))
         cnx.commit()
 
         # Query To Get User Balace
@@ -864,9 +863,10 @@ def sell():
         # Update User Balance
         user_balance += earnings
 
+        print(update_user_balance % (user_balance, user_id))
+
         # Update User Balance
-        update_info = (user_balance,user_id)
-        cursor.execute(update_user_balance,update_info)
+        cursor.execute(update_user_balance % (user_balance, user_id))
         cnx.commit()
 
         # Get Transaction Number
@@ -1157,8 +1157,7 @@ def group_buy(group_id):
 
         # Decrease Stock Share After Purchase
         stock_share = stock_share - int(stock_number)
-        update_info = (stock_share,stock_id)
-        cursor.execute(update_stock_share,update_info)
+        cursor.execute(update_stock_share.format(stock_share,stock_id))
         cnx.commit()
 
         # Update Group Balance
@@ -1269,8 +1268,7 @@ def group_sell(group_id):
         stock_shares += int(sale_amount)
 
         # Increase Stock Shares After Purchase
-        update_info = (stock_shares,stock_id)
-        cursor.execute(update_stock_share,update_info)
+        cursor.execute(update_stock_share.format(stock_shares,stock_id))
         cnx.commit()
 
         # Query To Get Group Balace
@@ -1451,7 +1449,6 @@ def user_transactions():
 
     # Return Reponse To User
     return (render_template("transactions_user.html", data = t_list, navbar = ui.navbar(request)))
-
 
 @app.route('/group_transactions/<group_id>')
 @jwt_required(locations = ['cookies'])
