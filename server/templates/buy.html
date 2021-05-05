@@ -9,25 +9,27 @@
 
 {{ navbar | safe }}
 
+<br>
+<div style="margin-left: 1%;">
 <form method="POST" action="">
   <!-- area that let user enter the stock_id they want to buy-->
-  <label for="stock_id">Stock_id:</label><br>
+  <label for="stock_id">Stock ID:</label><br>
   <input type="text" name = "stock_id" id="stock_id"><br>
-
+  <br>
 
   <!-- area that let user enter the number of stocks they want to buy-->
-  <label for="number">Number</label><br>
+  <label for="number">Share Number:</label><br>
   <input type="text" name = "number" id="number"><br>
-  <br>
   <br>
 
   <!--submit button-->
   <input type="submit" name = "buy" value="buy">
 </form>
+<br>
 <table border = '3' style="width:60%">
   <tr>
-    <th>Stock_id</th>
-    <th>Stock name</th>
+    <th>Stock ID</th>
+    <th>Stock Name</th>
     <th>Price</th>
     <th>Share</th>
   </tr>
@@ -40,4 +42,5 @@
   </tr>
   {% endfor %}
 </table>
+</div>
 </html>

@@ -302,9 +302,17 @@ def index():
         # Fetch User Form Data
         user_data = request.form
 
-        # Redirect To Stock Page
+        # Determine Redirect
         if (user_data.get("search")):
             return (redirect(str('/search/' + user_data["search_info"])))
+        elif (user_data.get("buy")):
+            return (redirect('/buy'))
+        elif (user_data.get("sell")):
+            return (redirect('/sell'))
+        elif (user_data.get("register")):
+            return (redirect('/register'))
+        elif (user_data.get("transactions")):
+            return (redirect("/transactions"))
 
     # Open Database Cursor
     cursor = cnx.cursor()
@@ -662,6 +670,7 @@ def buy():
     cursor = cnx.cursor()
     db.engine.execute(repeatable_read)
     db.engine.execute(transaction_start)
+    
     if(request.method == 'POST'):
         #if a user clicks on buy button,record his response
         userDetails = request.form
