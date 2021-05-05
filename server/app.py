@@ -827,9 +827,22 @@ def watchlist():
     # Return Response To User
     return (render_template("watchlist.html", data = watch_info, navbar = ui.navbar(request)))
 
-@app.route('/insert_watchlist', methods = ["GET", "POST"])
+@app.route('/insert_watchlist/<stock_id>', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
-def insert_into_watchlist():
+def insert_into_watchlist(stock_id):
+    # Get Current User ID
+    user_id = get_jwt_identity()
+
+    # Open Database Cursor
+    cursor = cnx.cursor()
+
+    # Query To Insert into Watchlist
+    insert_watchlist_query = """
+                            INSERT INTO Watchlist (user_id,stock_id)
+                            VALUES (%s, %s);
+                            """
+    
+    cursor.execute(insert_watchlist_query.format(user_id, stock_id))
     pass
 
 @app.route('/groups/<group_id>', methods = ["GET", "POST"])
