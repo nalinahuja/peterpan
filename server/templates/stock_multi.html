@@ -6,7 +6,7 @@
 <center>
 <h1>Available Stocks</h1>
 <div>
-  <table border = '1'>
+  <table border = '3' style="width:25%">
   <tr>
     <td><b>Name</b></td>
     <td><b>Price</b></td>
@@ -15,10 +15,10 @@
   </tr>
   {% for name, price, share in stock_data %}
     <tr>
-      <td>{{name}}</td>
-      <td>{{price}}</td>
-      <td>{{share}}</td>
-      <td><button><a href = "/stocks/{{ name }}">View Info</a></button></td>
+      <td><center>{{name}}</center></td>
+      <td><center>{{price}}</center></td>
+      <td><center>{{share}}</center></td>
+      <td><center><button><a href = "/stocks/{{ name }}">View Info</a></button></center></td>
     </tr>
   {% endfor %}
   </table>

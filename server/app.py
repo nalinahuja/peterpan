@@ -662,7 +662,6 @@ def single_stock(name):
         # Return Response To User
         return (render_template("stock_single.html", stock_history = si, data = stock_info, navbar = ui.navbar(request)))
 
-# Page to display when user clicks buy stock
 @app.route('/buy', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
 def buy():
@@ -776,7 +775,8 @@ def buy():
 @app.route('/sell', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
 def sell():
-    return "asdf"
+    # TODO
+    return ""
 
 # End Navbar Functions--------------------------------------------------------------------------------------------------------------------------------------------------------
 
