@@ -445,7 +445,7 @@ def index():
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if (request.method == 'POST'):
-        # Fetch user's input data
+        # Fetch User Input Data
         user_data = request.form
         input_user_id = user_data["user_id"]
         input_password = user_data["password"]
@@ -457,8 +457,7 @@ def login():
         if (obj is None):
             # Update View
             return (render_template('login.html', navbar = ui.navbar(request), error = True))
-        global curr_user_id
-        curr_user_id = input_user_id
+
         # Create Response
         response = make_response(redirect('/users/{}'.format(obj.user_id)))
 
@@ -488,37 +487,47 @@ def logoff():
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    # Open Database cursor
     cursor = cnx.cursor()
     if (request.method == 'POST'):
-        # Fetch user's input data
+        # Fetch User Input Data
         user_data = request.form
         input_user_id = user_data["user_id"]
         input_password = user_data["password"]
         confirm_password = user_data["confirm_password"]
-        #check if password equals confirm_password
+
+        # Verify Both Password Inputs Match
         if(input_password != confirm_password):
-            return "Password doesn't match!"
+            return (render_template('register.html', navbar = ui.navbar(request), error = True, msg = "Passwords do not match, please try again."))
+
+        # Initialize Cursor Input
         cursor_input = (input_user_id,)
-        cursor.execute(get_user_balance,cursor_input)
-        #check if the user id has already existed
+
+        # Execute Query
+        cursor.execute(get_user_balance, cursor_input)
+
+        # Check If User Id Already Exists
         balance = -9999
-        for cur in cursor:
+
+        # Extract Data From Cursor
+        for cur in (cursor):
             balance = cur
+
         if(balance != -9999):
-            return "User ID exists"
-        #use ORM to add users
+            return (render_template('register.html', navbar = ui.navbar(request), error = True, msg = "User ID exists, please choose a different one."))
+
+        # Use ORM to Add New User
         new_user = User(user_id = input_user_id,balance = 25000, password = input_password)
         db.session.add(new_user)
         db.session.commit()
 
         # Get User Object Using ORM
         obj = User.query.filter_by(user_id = input_user_id, password = input_password).first()
-        global curr_user_id
-        curr_user_id = input_user_id
+
         # Verify Return From Database
         if (obj is None):
             # Update View
-            return (render_template('login.html', navbar = ui.navbar(request), error = True))
+            return (render_template('register.html', navbar = ui.navbar(request), error = True, msg = "Sorry, we could not create an account for you at this time."))
 
         # Create Response
         response = make_response(render_template('register_success.html', navbar = ui.navbar(request)))
@@ -532,7 +541,10 @@ def register():
         # Return Response To Client
         return (response)
 
+    # Close Cursor
     cursor.close()
+
+    # Return Response To Client
     return (render_template('register.html', navbar = ui.navbar(request)))
 
 @app.route("/search/<search_info>", methods=['GET', 'POST'])

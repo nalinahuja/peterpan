@@ -26,6 +26,10 @@
     <br>
     <br>
 
+    {% if error %}
+      <p style="color:red;">{{ msg }}</p>
+    {% endif %}
+
     <!--submit button-->
     <input type="submit" name = "register" value="register">
     <br><br>
