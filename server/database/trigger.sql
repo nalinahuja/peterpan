@@ -46,7 +46,8 @@ BEGIN
                     FROM Transaction
                     WHERE transaction_id = new.transaction_id);
 
-    IF @type = 1 THEN
+    IF @type = 1
+    THEN
         INSERT INTO Group_Stock (group_id, stock_id, amount)
         VALUES(new.group_id, new.stock_id, @amount)
         ON DUPLICATE KEY UPDATE amount = (amount + @amount);

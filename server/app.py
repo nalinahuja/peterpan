@@ -749,13 +749,109 @@ def sell():
 
     # Detect For Post Method
     if (request.method == "POST"):
-        #set isolation level
+        # Start Transaction
         db.engine.execute(repeatable_read)
         db.engine.execute(transaction_start)
+
+        # Get User Details From POST Request
         userDetails = request.form
         stock_id = userDetails["stock_id"]
-        stock_number = userDetails["number"]
+        sale_amount = userDetails["number"]
+
+        # Query To Get User Stock By Stock ID
+        query = """
+                SELECT us.stock_id, us.amount, st.name, st.price
+                FROM User_Stock us JOIN Stock st ON us.stock_id = st.stock_id
+                WHERE us.user_id = {} AND us.stock_id = {};
+                """
+
+        # Execute Query
+        cursor.execute(query.format(user_id, stock_id))
+
+        # Initialize Stock Data
+        stock_name, stock_price, stock_shares = None
+
+        # Fetch Data From Cursor
+        for _, shares, name, price in (cursor):
+            stock_shares = shares
+            stock_price = price
+            stock_name = name
+
+        # Verify Remaining Funds
+        if (not(stock_name)):
+            return (render_template("error.html", navbar = ui.navbar(request), msg = "You Don't Own That Stock!"))
+
+        # Update Market Share Amount
+        stock_shares += sale_amount
+
+        # Increase Stock Shares After Purchase
+        update_info = (stock_shares,stock_id)
+        cursor.execute(update_stock_share,update_info)
+        cnx.commit()
+
+        # Query To Get User Balace
+        query = """
+                SELECT balance
+                FROM User
+                WHERE user_id = {};
+                """
+
+        # Execute Query
+        cursor.execute(query.format(user_id))
+
+        # Initialize User Balance
+        user_balance = None
+
+        # Fetch Data From Cursor
+        for balance in (cursor):
+            user_balance = float(balance)
+
+        # Calculate Earnings
+        earnings = stock_price * sale_amount
+
+        # Update User Balance
+        user_balance += earnings
+
+        # Update User Balance
+        update_info = (user_balance,user_id)
+        cursor.execute(update_user_balance,update_info)
+        cnx.commit()
+
+        # Get Transaction Number
+        cursor.execute(get_transaction_number)
+
+        # Initialize Transaction ID
+        transaction_id = 0
+
+        # Fetch Data From Cursor
+        for x in cursor:
+            transaction_id = x[0]
+
+        # Increment Transaction ID
+        transaction_id += 1
+
+        # Update The Transaction Table
+        today = datetime.date.today()
+        nt = Transaction(transaction_id = transaction_id,amount = int(sale_amount),date = today,price = stock_price)
+        db.session.add(nt)
+        db.session.commit()
+
+        # Update User Transaction
+        nut = User_Transaction(transaction_id = transaction_id,type = 0,user_id = user_id,stock_id = stock_id)
+        db.session.add(nut)
+        db.session.commit()
+
+        # End Transaction
         db.engine.execute(transaction_commit)
+
+        # Close Cursor
+        cursor.close()
+
+        # Form Confirmation Info
+        confirmation_info = [sale_amount, stock_id, stock_name, earnings, user_balance]
+
+        # Return Response To user
+        return (render_template("confirmation_sell.html", data = confirmation_info, navbar = ui.navbar(request)))
     else:
         # Initialize Stock Data List
         stock_info = []
