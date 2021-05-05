@@ -231,7 +231,6 @@ def search_function(search_word, cursor):
             return result
     return -1
 
-# TODO: Fix Function
 def update_stock():
     cursor = cnx.cursor()
     print ("update started")
@@ -799,8 +798,7 @@ def portfolio():
 
 # End Navbar Functions--------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Page to display the transaciton history
-@app.route("/transactions", methods = ["GET", "POST"])
+@app.route("/user_transactions", methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
 def transaction():
     # Get Current User ID
@@ -812,22 +810,27 @@ def transaction():
     #transaction list
     t_list = []
 
-    #executing the query to get the transaction info
+    # Execute The Query To Get User Transactions
     cursor.execute(get_transactions.format(user_id))
-    for stock_id, name, amount, transaction_type, price in cursor:
+
+    # Get Data From Cursor
+    for stock_id, name, amount, transaction_type, price in (cursor):
         s_id = stock_id
         t_type = transaction_type
         s_name = stock_id
         t_amount = amount
         total_cost = amount * price
 
+        # Add Transactions To List
         t_list.append((s_id, t_type, s_name, t_amount, total_cost))
 
+    # Close Cursor
     cursor.close()
 
-    return render_template("transactions.html", data = t_list, navbar = ui.navbar(request))
+    # Return Reponse To User
+    return (render_template("transactions.html", data = t_list, navbar = ui.navbar(request)))
 
-@app.route('/group_transaction_history/<group_id>')
+@app.route('/group_transactions/<group_id>')
 @jwt_required(locations = ['cookies'])
 def transaction_history(group_id):
     cursor = cnx.cursor()
