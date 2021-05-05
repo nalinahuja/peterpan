@@ -40,7 +40,7 @@ def navbar(request):
                   </li>
                 </ul>
 
-                <form method="POST" action="" class="form-inline my-2 my-lg-0">
+                <form method="POST" action="/" class="form-inline my-2 my-lg-0">
                   <input class="form-control mr-sm-2" type="text" placeholder="Stock name..." aria-label="Search" name="search_info"  id="search_info">
                   <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="search" value="search">Search</button>
                 </form>

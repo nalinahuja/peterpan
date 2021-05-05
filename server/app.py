@@ -565,25 +565,9 @@ def register():
     # Return Response To Client
     return (render_template('register.html', navbar = ui.navbar(request)))
 
-@app.route("/search/<search_info>", methods = ['GET', 'POST'])
-def search(search_info):
-    # Open Cursor
-    cursor = cnx.cursor()
-
-    # Pass Cursor To Search Function
-    data = search_function(search_info, cursor)
-
-    print("here")
-
-    # Verify Data
-    if(data == -1):
-        return (render_template("error.html", navbar = ui.navbar(request), msg = "Stock Not Found!"))
-
-    # Close Cursor
-    cursor.close()
-
-    # Return Response To Client
-    return render_template("search.html", data = data, navbar = ui.navbar(request))
+@app.route("/search/<stock_name>", methods = ['GET', 'POST'])
+def search(stock_name):
+    return (redirect("/stocks/" + stock_name))
 
 @app.route("/stocks", methods = ["GET", "POST"])
 def multi_stock():
@@ -777,8 +761,6 @@ def buy():
 def sell():
     # Get Current User ID
     curr_user_id = get_jwt_identity()
-
-    #
 
     # TODO
     return ""
