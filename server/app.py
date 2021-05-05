@@ -778,6 +778,25 @@ def sell():
     # TODO
     return ""
 
+@app.route('/portfolio/<user_id>')
+@jwt_required(locations = ['cookies'])
+def user_info(user_id):
+    cursor = cnx.cursor()
+    user_query = """
+                 SELECT s.stock_id, s.name, s.price, us.amount
+                 FROM User u
+                 JOIN User_Stock us
+                 ON u.user_id = us.user_id
+                 JOIN Stock s
+                 ON us.stock_id = s.stock_id
+                 WHERE u.user_id = %s;
+                 """
+    cursor.execute(user_query, user_id)
+    user_info = list()
+    for stock_id, stock_name, stock_price, stock_shares in cursor:
+        user_info.append((stock_id, stock_name, stock_price, stock_shares))
+    return render_template("user.html", data = user_info, navbar = ui.navbar(request))
+
 # End Navbar Functions--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # TODO: Review this
@@ -843,25 +862,6 @@ def transaction_history(group_id):
         total_cost = amount * price
         group_transaction.append((stock_id, stock_name, transaction_type, amount, price, total_cost, date))
     return render_template("group_transactions.html", data = group_transaction, navbar = ui.navbar(request))
-
-@app.route('/user/<user_id>')
-@jwt_required(locations = ['cookies'])
-def user_info(user_id):
-    cursor = cnx.cursor()
-    user_query = """
-                 SELECT s.stock_id, s.name, s.price, us.amount
-                 FROM User u
-                 JOIN User_Stock us
-                 ON u.user_id = us.user_id
-                 JOIN Stock s
-                 ON us.stock_id = s.stock_id
-                 WHERE u.user_id = %s;
-                 """
-    cursor.execute(user_query, user_id)
-    user_info = list()
-    for stock_id, stock_name, stock_price, stock_shares in cursor:
-        user_info.append((stock_id, stock_name, stock_price, stock_shares))
-    return render_template("user.html", data = user_info, navbar = ui.navbar(request))
 
 @app.route('/watchlist/<user_id>')
 @jwt_required(locations = ['cookies'])
