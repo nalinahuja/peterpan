@@ -130,14 +130,14 @@ update_stock_share = """
 
 update_user_balance = """
                       UPDATE User
-                      SET balance = %f
-                      WHERE user_id = %s;
+                      SET balance = {}
+                      WHERE user_id = {};
                       """
 
 update_group_balance = """
                        UPDATE Group_Info
-                       SET balance = %f
-                       WHERE group_id = %s;
+                       SET balance = {}
+                       WHERE group_id = {};
                        """
 
 insert_user_transaction = """
@@ -731,7 +731,7 @@ def buy():
         cnx.commit()
 
         # Update User Balance
-        cursor.execute(update_user_balance % (remaining_funds, user_id))
+        cursor.execute(update_user_balance.format(remaining_funds, user_id))
         cnx.commit()
 
         # Get Transaction Number
@@ -864,7 +864,7 @@ def sell():
         user_balance += earnings
 
         # Update User Balance
-        cursor.execute(update_user_balance % (user_balance, user_id))
+        cursor.execute(update_user_balance.format(user_balance, user_id))
         cnx.commit()
 
         # Get Transaction Number
@@ -1126,7 +1126,6 @@ def join_group():
 @app.route('/group_portfolio/<group_id>')
 @jwt_required(locations = ['cookies'])
 def group_portfolio(group_id):
-
     # Create Cursor
     cursor = cnx.cursor()
 
@@ -1258,8 +1257,7 @@ def group_buy(group_id):
         cnx.commit()
 
         # Update Group Balance
-        update_info = (remaining_funds,group_id)
-        cursor.execute(update_group_balance,update_info)
+        cursor.execute(update_group_balance.format(remaining_funds,group_id))
         cnx.commit()
 
         # Get Transaction Number
@@ -1316,7 +1314,7 @@ def group_buy(group_id):
         cursor.close()
 
         # Return Response To User
-        return (render_template("buy.html", data = stock_info, navbar = ui.navbar(request)))
+        return (render_template("group_buy.html", group_id = group_id, data = stock_info, navbar = ui.navbar(request)))
 
 @app.route('/group_sell/<group_id>', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
@@ -1392,8 +1390,7 @@ def group_sell(group_id):
         group_balance += earnings
 
         # Update Group Balance
-        update_info = (group_balance,group_id)
-        cursor.execute(update_group_balance,update_info)
+        cursor.execute(update_group_balance.format(group_balance,group_id))
         cnx.commit()
 
         # Get Transaction Number
@@ -1460,7 +1457,7 @@ def group_sell(group_id):
         cursor.close()
 
         # Return Response To User
-        return (render_template("sell.html", navbar = ui.navbar(request), data = stock_info))
+        return (render_template("group_sell.html", group_id = group_id, navbar = ui.navbar(request), data = stock_info))
 
 # End Navbar Functions--------------------------------------------------------------------------------------------------------------------------------------------------------
 
