@@ -1027,6 +1027,83 @@ def portfolio():
     return (render_template("portfolio.html", user_id = user_id, group_id = group_id, balance = balance, \
                                               stocks_owned = stocks_owned, stock_data = stock_info, navbar = ui.navbar(request)))
 
+@app.route('/join_group',methods = ['GET','POST'])
+@jwt_required(locations = ['cookies'])
+def join_group():
+    user_id = get_jwt_identity()
+    cursor = cnx.cursor()
+
+    if(request.method == "POST"):
+        user_data = request.form
+        input_group_id = user_data["group_id"]
+        input_money = user_data["enter_money"]
+
+        #if the user enters negative or zero
+        if(int(input_money) <= 0):
+            return (render_template("error.html", navbar = ui.navbar(request), msg = "you are required to give money to group"))
+
+        #check if the user already in the group
+        group_query = """
+                      SELECT group_id
+                      FROM User u
+                      JOIN Group_Users gu
+                      ON u.user_id = gu.user_id
+                      WHERE u.user_id = {};
+                      """
+        cursor.execute(group_query.format(user_id))
+
+        group_id = None
+
+        # Get Data from Cursor
+        for result in cursor:
+            group_id = int(result[0])
+
+        if(group_id is not None):
+            print(group_id)
+            return (render_template("error.html", navbar = ui.navbar(request), msg = "you already belong to a group, be loyal!"))
+        group_id = input_group_id
+        #get user balance
+        input_token = (user_id,)
+        balance = 0
+        cursor.execute(get_user_balance,input_token)
+        for user_balance in cursor:
+            balance = int(user_balance[0])
+
+        #if balance is not enough
+        input_money = int(input_money)
+        if(balance < input_money):
+            return (render_template("error.html", navbar = ui.navbar(request), msg = "Not enough money"))
+
+        #update a group's balance using ORM
+        input_token = (group_id,)
+        group_balance = None
+        cursor.execute(get_group_balance,input_token)
+        for cur in cursor:
+            group_balance = int(cur[0])
+        #if the group_id does not exist
+        if(group_balance is None):
+            return (render_template("error.html", navbar = ui.navbar(request), msg = "Invalid group id"))
+        group_balance += input_money
+        spec_group = Group_Info.query.filter_by(group_id = group_id).first()
+        spec_group.balance = group_balance
+        db.session.commit()
+
+        #update a user's Balance using ORM
+        balance -= input_money
+        spec_user = User.query.filter_by(user_id = user_id).first()
+        spec_user.balance = balance
+        db.session.commit()
+
+        #add user into group using ORM
+        new_group_member = Group_Users(group_id = group_id,user_id = user_id)
+        db.session.add(new_group_member)
+        db.session.commit()
+        cursor.close()
+        return render_template("group_join_success.html",navbar = ui.navbar(request))
+    cursor.close()
+    return render_template("group_join.html",navbar = ui.navbar(request))
+
+
 @app.route('/group_portfolio/<group_id>')
 @jwt_required(locations = ['cookies'])
 def group_portfolio(group_id):
