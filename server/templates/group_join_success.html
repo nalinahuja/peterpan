@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<!-- Title of the page-->
+<head>
+<title>Congrats</title>
+</head>
+{{ navbar | safe }}
+<br>
+<center>
+<h1>Group Register Successful. Thank you!</h1>
+<br>
+<p id="message"></p>
+<script>
+  window.setTimeout(function() {
+    // Set Redirect Message
+    document.getElementById("message").innerHTML = "Redirecting to home page..."
+
+    // Redirect To Homepage
+    window.location.href = "/";
+  }, 2500);
+</script>
+<center>
