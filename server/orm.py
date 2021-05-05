@@ -30,19 +30,19 @@ class Watchlist(db.Model):
     user_id = db.Column(db.String(30), db.ForeignKey('User.user_id'), primary_key = True, nullable = False)
     stock_id = db.Column(db.Integer, db.ForeignKey('Stock.stock_id'), primary_key = True, nullable = False)
 
-class Group(db.Model):
-    __tablename__ = 'Group'
+class Group_Info(db.Model):
+    __tablename__ = 'Group_Info'
     group_id = db.Column(db.Integer, primary_key = True, nullable = False)
     balance = db.Column(db.Float, nullable = False)
 
 class Group_Users(db.Model):
     __tablename__ = 'Group_Users'
-    group_id = db.Column(db.Integer, db.ForeignKey('Group.group_id'), primary_key = True, nullable = False)
+    group_id = db.Column(db.Integer, db.ForeignKey('Group_Info.group_id'), primary_key = True, nullable = False)
     user_id = db.Column(db.String(30), db.ForeignKey('User.user_id'), primary_key = True, nullable = False)
 
 class Group_Stock(db.Model):
     __tablename__ = 'Group_Stock'
-    group_id = db.Column(db.Integer, db.ForeignKey('Group.group_id'), primary_key = True, nullable = False)
+    group_id = db.Column(db.Integer, db.ForeignKey('Group_Info.group_id'), primary_key = True, nullable = False)
     stock_id = db.Column(db.Integer, db.ForeignKey('Stock.stock_id'), primary_key = True, nullable = False)
     amount = db.Column(db.Integer, nullable = False)
 
@@ -64,7 +64,7 @@ class Group_Transaction(db.Model):
     __tablename__ = 'Group_Transaction'
     transaction_id = db.Column(db.Integer, db.ForeignKey('Transaction.transaction_id'), primary_key = True, nullable = False)
     type = db.Column(db.Boolean, nullable = False)
-    group_id = db.Column(db.Integer, db.ForeignKey('Group.group_id'), primary_key = True, nullable = False)
+    group_id = db.Column(db.Integer, db.ForeignKey('Group_Info.group_id'), primary_key = True, nullable = False)
     stock_id = db.Column(db.Integer, db.ForeignKey('Stock.stock_id'), primary_key = True, nullable = False)
 
 # Create All Databases

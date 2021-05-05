@@ -24,14 +24,13 @@
     <label for="confirm_password">Confirm Password:</label><br>
     <input type="password" name = "confirm_password" id="confirm_password"><br>
     <br>
-    <br>
 
     {% if error %}
       <p style="color:red;">{{ msg }}</p>
     {% endif %}
 
     <!--submit button-->
-    <input type="submit" name = "register" value="register">
+    <input type="submit" name = "register" value="Register">
     <br><br>
     <a href="/login">Sign In Instead</a>
   </form>

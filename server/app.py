@@ -189,7 +189,7 @@ jwt = JWTManager(app)
 # Unauthorized Page Access Handler
 @jwt.unauthorized_loader
 def unauthorized(callback):
-    return (render_template('401.html', navbar = ui.navbar(request)))
+    return (render_template('login.html', navbar = ui.navbar(request)))
 
 # End Authentication Initialization------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -495,7 +495,7 @@ def register():
             return (render_template('register.html', navbar = ui.navbar(request), error = True, msg = "User ID exists, please choose a different one."))
 
         # Use ORM to Add New User
-        new_user = User(user_id = input_user_id,balance = 25000, password = input_password)
+        new_user = User(user_id = input_user_id,balance = 25000000, password = input_password)
         db.session.add(new_user)
         db.session.commit()
 
@@ -782,11 +782,11 @@ def portfolio():
                  ON u.user_id = us.user_id
                  JOIN Stock s
                  ON us.stock_id = s.stock_id
-                 WHERE u.user_id = %s;
+                 WHERE u.user_id = {};
                  """
 
     # Execute Query
-    cursor.execute(user_query, user_id)
+    cursor.execute(user_query.format(user_id))
 
     # Initialize User Info List
     user_info = list()
@@ -796,7 +796,7 @@ def portfolio():
         user_info.append((stock_id, stock_name, stock_price, stock_shares))
 
     # Return Response To Caller
-    return (render_template("user.html", data = user_info, navbar = ui.navbar(request)))
+    return (render_template("portfolio.html", data = user_info, navbar = ui.navbar(request)))
 
 # End Navbar Functions--------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -873,9 +873,9 @@ def transaction():
     cursor.execute(get_transactions.format(user_id))
 
     # Get Data From Cursor
-    for stock_id, name, amount, transaction_type, price in (cursor):
+    for stock_id, name, amount, transaction_type, price, date in (cursor):
         # Add Transactions To List
-        t_list.append((stock_id, transaction_type, name, amount, amount * price))
+        t_list.append((stock_id, name, transaction_type, amount, price, amount * price, date))
 
     # Close Cursor
     cursor.close()

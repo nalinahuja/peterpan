@@ -1,59 +1,31 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <style>
-    body, html {
-      background-image: url('https://specials-images.forbesimg.com/imageserve/5f3a9bf8ea6250a0856f35b4/960x0.jpg?fit=scale');"
-
-      /* Center and scale the image nicely */
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: cover;
-
-      height: 100%;
-
-      overflow: hidden;
-    }
-  </style>
-</head>
 <body>
   {{ navbar | safe }}
   <title>User Stocks</title>
   <div>
     <center>
-    <div style="background-color: #24c594; width: 30%; height: 800px;">
       <div>
         <br>
         <h1>User Stocks</h1>
         <div>
-          {% for stock_id, stock_name, stock_amount, stock_shares in data %}
-            <table border = '1'>
+          <table border = '3' style="width:60%">
             <tr>
-            <td>Stock ID</td>
-            <td>{{stock_id}}</td>
+              <th>Stock ID</th>
+              <th>Stock Name</th>
+              <th>Stock Price</th>
+              <th># of Shares</th>
             </tr>
-
+            {% for stock_id, stock_name, stock_price, stock_shares in data %}
             <tr>
-            <td>Stock Name</td>
-            <td>{{stock_name}}</td>
+              <th>{{stock_id}}</th>
+              <th>{{stock_name}}</th>
+              <th>{{stock_price}}</th>
+              <th>{{stock_shares}}</th>
             </tr>
-
-            <tr>
-            <td>Stock Amount</td>
-            <td>{{stock_amount}}</td>
-            </tr>
-
-            <tr>
-            <td>Stock Shares</td>
-            <td>{{stock_shares}}</td>
-            </tr>
-
-            </table>
-            <br>
-
-          {% endfor %}
+            {% endfor %}
+          </table>
         </div>
-      </div>
     </div>
     </center>
   </div>
