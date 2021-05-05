@@ -787,7 +787,10 @@ def sell():
         # Initialize Stock Data List
         stock_info = []
 
+        # Get Stocks In User Possession
+        query = """
 
+                """
 
         # Execute Query To Get All Stock
         cursor.execute(query)
@@ -800,7 +803,7 @@ def sell():
         cursor.close()
 
         # Return Response To User
-        return (render_template("buy.html", data = stock_info, navbar = ui.navbar(request)))
+        return (render_template("sell.html", navbar = ui.navbar(request)))
 
 @app.route('/portfolio')
 @jwt_required(locations = ['cookies'])
