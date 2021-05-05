@@ -637,7 +637,7 @@ def single_stock(name):
     # Determine Stock Existence
     if((stock_price is None) or (stock_share is None)):
         # Return Response To User
-        return (render_template("error.html", navbar = ui.navbar(request), msg = "Stock does not exist, please try another stock."))
+        return (render_template("error.html", navbar = ui.navbar(request), msg = "That stock does not exist, please try another stock."))
     else:
         # Format Stock Data As Tuple
         stock_info = [name, stock_price, stock_share]
