@@ -739,7 +739,6 @@ def sell():
         stock_id = userDetails["stock_id"]
         stock_number = userDetails["number"]
 
-
     else:
         # Initialize Stock Data List
         stock_info = []

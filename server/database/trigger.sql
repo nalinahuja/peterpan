@@ -15,14 +15,15 @@ SET @amount = (SELECT amount
                 FROM Transaction
                 WHERE transaction_id = new.transaction_id);
 
-IF @type = 1 THEN
-    INSERT INTO User_Stock (user_id, stock_id, amount) 
-    VALUES(new.user_id, new.stock_id, @amount) 
-    ON DUPLICATE KEY UPDATE amount = (amount + @amount)
-ELSE
-    INSERT INTO User_Stock (user_id, stock_id, amount) 
-    VALUES(new.user_id, new.stock_id, @amount) 
-    ON DUPLICATE KEY UPDATE amount = (amount - @amount)
+IF @type = 1
+THEN
+    INSERT INTO User_Stock (user_id, stock_id, amount)
+    VALUES (new.user_id, new.stock_id, @amount)
+    ON DUPLICATE KEY UPDATE amount = (amount + @amount);
+ElSE
+    INSERT INTO User_Stock (user_id, stock_id, amount)
+    VALUES (new.user_id, new.stock_id, @amount)
+    ON DUPLICATE KEY UPDATE amount = (amount - @amount);
 END IF;
 
 END //
@@ -46,13 +47,13 @@ BEGIN
                     WHERE transaction_id = new.transaction_id);
 
     IF @type = 1 THEN
-        INSERT INTO Group_Stock (group_id, stock_id, amount) 
-        VALUES(new.group_id, new.stock_id, @amount) 
-        ON DUPLICATE KEY UPDATE amount = (amount + @amount)
+        INSERT INTO Group_Stock (group_id, stock_id, amount)
+        VALUES(new.group_id, new.stock_id, @amount)
+        ON DUPLICATE KEY UPDATE amount = (amount + @amount);
     ELSE
-        INSERT INTO Group_Stock (group_id, stock_id, amount) 
-        VALUES(new.group_id, new.stock_id, @amount) 
-        ON DUPLICATE KEY UPDATE amount = (amount - @amount)
+        INSERT INTO Group_Stock (group_id, stock_id, amount)
+        VALUES(new.group_id, new.stock_id, @amount)
+        ON DUPLICATE KEY UPDATE amount = (amount - @amount);
     END IF;
 
 END //
