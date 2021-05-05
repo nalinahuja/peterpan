@@ -324,7 +324,7 @@ def index():
 
     # Fetch Data From Cursor
     for result in (cursor):
-        if (result[0]):
+        if (result[0] is not None):
             num_shares = int(result[0])
 
     # Initialize Stock Market Data
@@ -1000,7 +1000,7 @@ def portfolio():
 
     # Get Data From Cursor
     for result in (cursor):
-        if (result[0]):
+        if (result[0] is not None):
             stocks_owned = int(result[0])
 
     # Get user's group_id
@@ -1011,17 +1011,21 @@ def portfolio():
                   ON u.user_id = gu.user_id
                   WHERE u.user_id = {};
                   """
+
+    # Execute Query
     cursor.execute(group_query.format(user_id))
-    
-    group_id = None
+
+    # Initialize Group ID
+    group_id = -1
 
     # Get Data from Cursor
-    for result in cursor:
-        if (result[0]):
+    for result in (cursor):
+        if (result[0] is not None):
             group_id = int(result[0])
 
     # Return Response To Caller
-    return (render_template("portfolio.html", user_id = user_id, group_id = group_id, balance = balance, stocks_owned = stocks_owned, stock_data = stock_info, navbar = ui.navbar(request)))
+    return (render_template("portfolio.html", user_id = user_id, group_id = group_id, balance = balance, \
+                                              stocks_owned = stocks_owned, stock_data = stock_info, navbar = ui.navbar(request)))
 
 @app.route('/group_portfolio/<group_id>')
 @jwt_required(locations = ['cookies'])
@@ -1032,7 +1036,7 @@ def group_portfolio(group_id):
 
     # Query To Get All User Information
     group_query = """
-                 SELECT s.stock_id, s.name, s.price, us.amount
+                 SELECT s.stock_id, s.name, s.price, gs.amount
                  FROM Group_Info g
                  JOIN Group_Stock gs
                  ON g.group_id = gs.group_id
@@ -1086,11 +1090,11 @@ def group_portfolio(group_id):
 
     # Get Data From Cursor
     for result in (cursor):
-        if (result[0]):
+        if (result[0] is not None):
             stocks_owned = int(result[0])
 
     # Return Response To Caller
-    return (render_template("portfolio.html", group_id = group_id, balance = balance, stocks_owned = stocks_owned, stock_data = stock_info, navbar = ui.navbar(request)))
+    return (render_template("group_portfolio.html", group_id = group_id, balance = balance, stocks_owned = stocks_owned, stock_data = stock_info, navbar = ui.navbar(request)))
 
 @app.route('/group_buy/<group_id>', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
@@ -1460,9 +1464,9 @@ def group_transactions(group_id):
                         ON t.transaction_id = g.transaction_id
                         JOIN Stock s
                         ON g.stock_id = s.stock_id
-                        WHERE g.group_id = %s;
+                        WHERE g.group_id = {};
                         """
-    cursor.execute(transaction_query, group_id)
+    cursor.execute(transaction_query.format(group_id))
     group_transaction = list()
     for stock_id, stock_name, amount, transaction_type, price, date in cursor:
         total_cost = amount * price
