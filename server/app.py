@@ -666,20 +666,26 @@ def single_stock(name):
 @app.route('/buy', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
 def buy():
+    # Get Current User ID
+    curr_user_id = get_jwt_identity()
+
     # Create Database Cursor
     cursor = cnx.cursor()
+
+    # Set Transaction Level
     db.engine.execute(repeatable_read)
     db.engine.execute(transaction_start)
-    
-    if(request.method == 'POST'):
+
+    # Detect If Post Method
+    if (request.method == 'POST'):
         #if a user clicks on buy button,record his response
         userDetails = request.form
         stock_id = userDetails["stock_id"]
         number = userDetails["number"]
         data = (int(stock_id),)
-        global curr_user_id
+
         #get stock price for the stock user want to buy
-        cursor.execute(get_stock_by_stock_id,data)
+        cursor.execute(get_stock_by_stock_id, data)
         stock_price = 0
         stock_share = 0
         stock_name = ""
@@ -690,7 +696,7 @@ def buy():
             stock_share = share
         #if there is no stock price
         if(stock_price == 0):
-            return "Invalid stock ID. Please Go back and try again"
+            return (render_template("error.html", navbar = ui.navbar(request), msg = "Invalid stock ID. Please Go back and try again!"))
 
         #get user balance
         cur_info = (curr_user_id,)
@@ -702,7 +708,7 @@ def buy():
         remaining = balance - spent
         #if user does not have enough balance
         if(remaining < 0):
-            return "Not enough balance"
+            return (render_template("error.html", navbar = ui.navbar(request), msg = "Not Enough Balance!"))
 
         #increase stock share after user buys it
         stock_share = stock_share + int(number)
@@ -740,7 +746,6 @@ def buy():
         cursor.execute(insert_transaction,insert_info)
         cnx.commit()
 
-
         #update user_transaction
         insert_info = (transaction_id,1,curr_user_id,stock_id)
         cursor.execute(insert_user_transaction,insert_info)
@@ -750,8 +755,7 @@ def buy():
         confirmation_info = [number,stock_id,stock_name,spent,remaining]
 
         db.engine.execute(transaction_commit)
-        return render_template("confirmation.html", data = confirmation_info, navbar = ui.navbar(request))
-
+        return render_template("buy_confirmation.html", data = confirmation_info, navbar = ui.navbar(request))
 
     #initialize purchase page
     stock_info = []
@@ -764,8 +768,8 @@ def buy():
         stock_info.append((stock_id,name,price,share))
 
     cursor.close()
+
     #copy all of the code inside buy_template.html into buy.html
-    #cursor.close()
     db.engine.execute(transaction_commit)
     return render_template("buy.html", data = stock_info, navbar = ui.navbar(request))
 
