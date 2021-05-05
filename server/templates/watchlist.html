@@ -1,28 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <style>
-    body, html {
-      background-image: url('https://specials-images.forbesimg.com/imageserve/5f3a9bf8ea6250a0856f35b4/960x0.jpg?fit=scale');"
-
-      /* Center and scale the image nicely */
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: cover;
-
-      height: 100%;
-
-      overflow: hidden;
-    }
-  </style>
 </head>
 <body>
   {{ navbar | safe }}
   <title>User Watchlist</title>
   <div>
     <center>
-    <div style="background-color: #24c594; width: 30%; height: 800px;">
-      <div>
         <br>
         <h1>User Watchlist</h1>
         <div>
@@ -54,7 +38,6 @@
           {% endfor %}
         </div>
       </div>
-    </div>
     </center>
   </div>
 </body>

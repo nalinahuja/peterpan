@@ -754,7 +754,7 @@ def buy():
         confirmation_info = [number,stock_id,stock_name,spent,remaining]
 
         db.engine.execute(transaction_commit)
-        return render_template("buy_confirmation.html", data = confirmation_info, navbar = ui.navbar(request))
+        return render_template("confirmation_buy.html", data = confirmation_info, navbar = ui.navbar(request))
 
     #initialize purchase page
     stock_info = []
@@ -777,6 +777,8 @@ def buy():
 def sell():
     # Get Current User ID
     curr_user_id = get_jwt_identity()
+
+    #
 
     # TODO
     return ""
@@ -811,25 +813,10 @@ def portfolio():
     for stock_id, stock_name, stock_price, stock_shares in (cursor):
         user_info.append((stock_id, stock_name, stock_price, stock_shares))
 
+    # Return Response To Caller
     return (render_template("user.html", data = user_info, navbar = ui.navbar(request)))
 
 # End Navbar Functions--------------------------------------------------------------------------------------------------------------------------------------------------------
-
-# TODO: Review this
-@app.route("/watchlist/<user_id>", methods=['GET', 'POST'])
-def add_to_watchlist():
-    cursor = cnx.cursor()
-    if(request.method == 'POST'):
-        userDetails = request.form
-        stock_id = userDetails["stock_id"]
-        number = userDetails["number"]
-        data = (int(stock_id),)
-
-        userid = user_id
-
-        cursor.execute(insert_watchlist, userid, stock_id)
-        cnx.commit()
-    cursor.close()
 
 # Page to display the transaciton history
 @app.route("/transactions", methods = ["GET", "POST"])
@@ -879,23 +866,32 @@ def transaction_history(group_id):
         group_transaction.append((stock_id, stock_name, transaction_type, amount, price, total_cost, date))
     return render_template("group_transactions.html", data = group_transaction, navbar = ui.navbar(request))
 
-@app.route('/watchlist/<user_id>')
+@app.route('/watchlist', methods = ["GET", "POST"])
 @jwt_required(locations = ['cookies'])
-def watchlist(user_id):
+def watchlist():
+    # Get Current User ID
+    user_id = get_jwt_identity()
+
+    # Open Database Cursor
     cursor = cnx.cursor()
+
+    # Query To Get Watchlist Items
     watchlist_query = """
                         SELECT s.stock_id, s.name, s.price, s.share
                         FROM Watchlist w
                         JOIN Stock s
                         ON w.stock_id = s.stock_id
-                        WHERE w.user_id = %s;
+                        WHERE w.user_id = {};
                         """
-    cursor.execute(watchlist_query, user_id)
+
+    # Execute Query
+    cursor.execute(watchlist_query.format(user_id))
+
     watch_info = list()
     for stock_id, stock_name, stock_price, stock_shares in cursor:
         watch_info.append((stock_id, stock_name, stock_price, stock_shares))
 
-    return render_template("watchlist.html", data = watch_info, navbar = ui.navbar(request))
+    return (render_template("watchlist.html", data = watch_info, navbar = ui.navbar(request)))
 
 # End External Functions----------------------------------------------------------------------------------------------------------------------------------------------------
 

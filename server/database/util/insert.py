@@ -44,7 +44,7 @@ insert_user = """
               """
 
 # Insert User Into Database
-random_user = (int(0), float(2500), str("123"))
+random_user = (int(0), float(25000000000000), str("123"))
 cursor.execute(insert_user, random_user)
 cnx.commit()
 
