@@ -18,3 +18,7 @@ Then run the following command:
 ```bash
 command python3 ./server/start.py
 ```
+
+# The Musketeers
+
+Nalin Ahuja, Saisuvan Chikyala, Weiyan Hu, Nivin Kandaswami
