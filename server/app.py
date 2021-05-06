@@ -1138,7 +1138,7 @@ def join_group():
                 INSERT INTO Group_Users (group_id, user_id)
                 VALUES ({}, {});
                 """
-                
+
         cursor.execute(query.format(group_id, user_id))
         cnx.commit()
 
