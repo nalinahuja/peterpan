@@ -1134,17 +1134,9 @@ def join_group():
         spec_user.balance = balance
         db.session.commit()
 
-        query = """
-                INSERT INTO Group_Users (group_id, user_id)
-                VALUES ({}, {});
-                """
-
-        cursor.execute(query.format(group_id, user_id))
-        cnx.commit()
-
-        # new_group_member = Group_Users(group_id = group_id,user_id = user_id)
-        # db.session.add(new_group_member)
-        # db.session.commit()
+        new_group_member = Group_Users(group_id = group_id,user_id = user_id)
+        db.session.add(new_group_member)
+        db.session.commit()
 
         cursor.close()
         return render_template("group_join_success.html",navbar = ui.navbar(request))
