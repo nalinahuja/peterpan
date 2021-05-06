@@ -259,14 +259,14 @@ def update_stock():
     cursor.close()
     db.engine.execute(transaction_commit)
 
-# # Initialize Background Scheduler
-# scheduler = BackgroundScheduler()
-#
-# # Create New Job
-# scheduler.add_job(update_stock, 'interval', minutes = 5)
-#
-# # Start Scheduler
-# scheduler.start()
+# Initialize Background Scheduler
+scheduler = BackgroundScheduler()
+
+# Create New Job
+scheduler.add_job(update_stock, 'interval', minutes = 5)
+
+# Start Scheduler
+scheduler.start()
 
 # End Internal Functions----------------------------------------------------------------------------------------------------------------------------------------------------
 
